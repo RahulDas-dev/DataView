@@ -1,0 +1,28 @@
+.dataloader{
+    @apply w-full my-20 p-5 rounded-md bg-neutral-200 dark:bg-neutral-700 flex flex-col justify-center items-center gap-5;
+}
+
+.dataloader>.settings-area{
+    @apply w-full flex flex-row justify-between;
+}
+
+.dataloader>.input-area{
+    @apply relative w-full;
+}
+
+/* .dataloader>.input-area>.input-box{
+    @apply block w-full p-4 ps-10 text-sm text-neutral-600 bg-gray-50 dark:bg-neutral-600 dark:placeholder-gray-400 dark:text-white;
+    @apply border rounded-md  ring-0 outline-0 border-gray-300 focus:border-neutral-500  dark:border-neutral-500 dark:focus:border-neutral-400;
+} */
+
+/* .dataloader>.input-area>.url-upload-btn{
+    @apply absolute end-2.5 bottom-2.5;
+}
+
+.dataloader>.input-area>.file-upload-btn{
+    @apply absolute end-2.5 bottom-2.5;
+} */
+
+.dataloader>.output-area{
+    @apply relative w-full flex flex-row gap-1 justify-between;
+}

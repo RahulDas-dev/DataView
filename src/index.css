@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+    @apply scroll-smooth;
+}
+  
+body {
+    @apply antialiased font-body text-gray-600 bg-neutral-50 dark:text-gray-400 dark:bg-zinc-900;
+    -moz-osx-font-smoothing: grayscale;
+}
+  
+
+@layer components{
+    .container {
+        @apply lg:max-w-4xl md:w-9/12 md:max-w-none sm:w-11/12 mx-auto ;
+    }
+    .btn {
+        @apply font-mono tracking-tight text-xs px-4 py-2 rounded-md ring-0 outline-0 disabled:opacity-25;
+        @apply text-white bg-neutral-800 hover:bg-neutral-700;
+        @apply dark:text-neutral-950 dark:bg-neutral-300 dark:hover:bg-neutral-400;
+    }
+
+    .btn-icon {
+        @apply text-xs p-0 m-0 rounded-md ring-0 outline-0 disabled:opacity-25;
+        @apply bg-transparent opacity-75 hover:opacity-100;
+    }
+
+    .check-box{
+        @apply w-4 h-4 rounded-sm outline-none ring-0;
+        @apply text-neutral-600 bg-neutral-400 border-neutral-500;
+        @apply dark:text-neutral-200 dark:bg-neutral-400 dark:border-neutral-600 ;
+    }
+
+    .input-box{
+        @apply inline-block w-full h-12 p-4 ps-10 ring-0 outline-0 text-sm text-neutral-600 dark:text-white bg-neutral-50 dark:bg-neutral-600;
+        @apply placeholder-neutral-500 dark:placeholder-neutral-400 ;
+        @apply border rounded-md border-gray-300 focus:border-neutral-500 dark:border-neutral-500 dark:focus:border-neutral-400;
+    }
+    
+}
+
+
+
+.material-icon {
+    font-family: 'Material Icons';
+    vertical-align: middle;
+    font-weight: normal;
+    font-style: normal;
+    font-size: 18px;  /* Preferred icon size */
+    display: inline-block;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+
+    /* Support for all WebKit browsers. */
+    -webkit-font-smoothing: antialiased;
+    /* Support for Safari and Chrome. */
+    text-rendering: optimizeLegibility;
+
+    /* Support for Firefox. */
+    -moz-osx-font-smoothing: grayscale;
+
+    /* Support for IE. */
+    font-feature-settings: 'liga';
+}
