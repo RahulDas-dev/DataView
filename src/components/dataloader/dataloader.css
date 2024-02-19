@@ -10,19 +10,14 @@
     @apply relative w-full;
 }
 
-/* .dataloader>.input-area>.input-box{
-    @apply block w-full p-4 ps-10 text-sm text-neutral-600 bg-gray-50 dark:bg-neutral-600 dark:placeholder-gray-400 dark:text-white;
-    @apply border rounded-md  ring-0 outline-0 border-gray-300 focus:border-neutral-500  dark:border-neutral-500 dark:focus:border-neutral-400;
-} */
-
-/* .dataloader>.input-area>.url-upload-btn{
-    @apply absolute end-2.5 bottom-2.5;
-}
-
-.dataloader>.input-area>.file-upload-btn{
-    @apply absolute end-2.5 bottom-2.5;
-} */
-
 .dataloader>.output-area{
     @apply relative w-full flex flex-row gap-1 justify-between;
+}
+
+.dataloader>.output-area>.err-area{
+    @apply block  rounded-md text-center align-middle bg-red-100 ;
+}
+
+.dataloader>.output-area>.err-area>.err-msg{
+    @apply p-1 font-mono text-xs text-red-500
 }

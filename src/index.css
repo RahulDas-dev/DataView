@@ -17,9 +17,10 @@ body {
         @apply lg:max-w-4xl md:w-9/12 md:max-w-none sm:w-11/12 mx-auto ;
     }
     .btn {
-        @apply font-mono tracking-tight text-xs px-4 py-2 rounded-md ring-0 outline-0 disabled:opacity-25;
-        @apply text-white bg-neutral-800 hover:bg-neutral-700;
+        @apply font-mono tracking-tight text-xs px-4 py-2 rounded-md ring-0 outline-0 disabled:opacity-50;
+        @apply text-white bg-neutral-800 hover:bg-neutral-700 ;
         @apply dark:text-neutral-950 dark:bg-neutral-300 dark:hover:bg-neutral-400;
+        @apply disabled:hover:bg-neutral-800 disabled:hover:dark:bg-neutral-300;
     }
 
     .btn-icon {
@@ -27,16 +28,34 @@ body {
         @apply bg-transparent opacity-75 hover:opacity-100;
     }
 
+    
     .check-box{
-        @apply w-4 h-4 rounded-sm outline-none ring-0;
-        @apply text-neutral-600 bg-neutral-400 border-neutral-500;
-        @apply dark:text-neutral-200 dark:bg-neutral-400 dark:border-neutral-600 ;
+        @apply w-4 h-4 rounded-sm outline-none ring-0 appearance-none shrink-0 ;
+        @apply text-neutral-300 bg-neutral-500 border-neutral-500;
+        @apply dark:text-neutral-200 dark:bg-neutral-400 dark:border-neutral-600;
+        @apply checked:bg-neutral-800 checked:border-0;
+        @apply disabled:opacity-50 disabled:pointer-events-none;
+    }
+
+    input::placeholder {
+        @apply font-mono opacity-50;
     }
 
     .input-box{
-        @apply inline-block w-full h-12 p-4 ps-10 ring-0 outline-0 text-sm text-neutral-600 dark:text-white bg-neutral-50 dark:bg-neutral-600;
-        @apply placeholder-neutral-500 dark:placeholder-neutral-400 ;
-        @apply border rounded-md border-gray-300 focus:border-neutral-500 dark:border-neutral-500 dark:focus:border-neutral-400;
+        @apply inline-block w-full h-12 p-4 ps-10 ring-0 outline-0 text-sm border rounded-md shadow-sm focus:z-10;
+        @apply text-neutral-600 dark:text-white bg-neutral-50 dark:bg-neutral-600;
+        @apply border-gray-300 focus:border-neutral-700 dark:border-neutral-500 dark:focus:border-neutral-400;
+        @apply placeholder-neutral-500 dark:placeholder-neutral-400;
+        @apply disabled:opacity-50 disabled:pointer-events-none;
+    }
+
+    .input-file{
+        @apply inline-block w-full h-12 ring-0 outline-0 text-sm border rounded-md shadow-sm  focus:z-10;
+        @apply text-neutral-600 dark:text-white bg-neutral-50 dark:bg-neutral-600;
+        @apply border-gray-300 focus:border-neutral-700 dark:border-neutral-500 dark:focus:border-neutral-400;
+        @apply disabled:opacity-50 disabled:pointer-events-none ;
+        @apply file:border-0 file:me-4 file:py-3 file:px-4 file:h-12 file:font-mono;
+        @apply file:bg-neutral-800 file:text-neutral-300 dark:file:bg-neutral-200 dark:file:text-neutral-700;
     }
     
 }
