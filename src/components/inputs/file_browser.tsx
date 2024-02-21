@@ -1,29 +1,36 @@
-import { FunctionComponent, ReactElement, ChangeEvent, useId   } from 'react'
+import classNames from 'classnames';
+import { ReactElement, ChangeEvent, useId, forwardRef, useCallback  } from 'react'
 
 
 export interface FileBrowserProps{
-    filename: string
+    file : File|null
     onChange: (e:ChangeEvent<HTMLInputElement>) => void
     disabled: boolean
+    onUpload: ()=> void
 }
 
-const FileBrowser: FunctionComponent<FileBrowserProps> = ({ filename, onChange, disabled }):ReactElement =>{
-    const inputId  = useId();    
+const FileBrowser = forwardRef<HTMLInputElement,FileBrowserProps>(({file, onChange, disabled, onUpload }, fref):ReactElement =>{
+    const inputId  = useId();   
+    const is_file_empty = () => (file == null) ? true: false
 
     return (
         <div className="relative w-full">
 
             <label htmlFor="file-input" className="sr-only">Choose file</label>
-            <input type="file" 
+            <input type="file"
+                ref={fref} 
                 id={inputId} 
-                value={filename}
                 disabled={disabled}
                 placeholder="Browse file, CSV / TSV File type allowed only ...."
                 accept=".csv, .tsv" 
                 onChange={onChange}
                 className="input-file" />
-      </div>
+
+            <button className={classNames("btn absolute end-1 bottom-1",{'invisible': is_file_empty() })} 
+                    onClick={onUpload}
+                    disabled={disabled}>Fetch Data</button>        
+        </div>
     );
-};
+});
 
 export default FileBrowser

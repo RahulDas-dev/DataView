@@ -1,4 +1,4 @@
-import { FunctionComponent, ReactElement, useState, ChangeEvent, useCallback   } from 'react'
+import { FunctionComponent, ReactElement, useState, ChangeEvent, useCallback ,useRef  } from 'react'
 import './dataloader.css';
 import Checkbox from '../inputs/checkbox';
 import SettingsBtn from '../button/settingsbtn';
@@ -10,24 +10,30 @@ import ResetBtn from '../button/resetbtn';
 const DataLoader: FunctionComponent = ():ReactElement =>{
 
   const [fileLoadScheme, setFls] = useState<boolean>(true)
-  const [filename, setFilename] = useState<string>('')
-  const [chkbox_disabled, setChkBoxDisabled] = useState<boolean>(false)
-  const [btn_disabled, setBtnDisabled] = useState<boolean>(false)
+  const [file_url, setFileurl] = useState<string>('')
+  const [file_object, setFileobject] = useState<File|null>(null)
+  const [is_chkbox_disabled, setChkBoxDisabled] = useState<boolean>(false)
+  const [is_inputs_disabled, setInputsDisabled] = useState<boolean>(false)
+  const [is_restbtn_visible, setBtnVisibility] = useState<boolean>(false)
+  const file_bsrowser_ref = useRef<HTMLInputElement>(null);
 
   const [error, setError] =useState<string>('')
 
-  const is_filename_empty = useCallback(() => filename.trim().length > 0 ? false: true,[filename])
-
   const restOperation = useCallback(() => {
     setChkBoxDisabled(false)
-    setBtnDisabled(false)
+    setInputsDisabled(false)
     setError('')
-    setFilename('')
-    console.log('Reset the input fileds')
+    setFileurl('')
+    setBtnVisibility(false)
+    if (file_bsrowser_ref.current){
+        console.log('Reset the input fileds')
+        file_bsrowser_ref.current.value = "";
+    }
   },[])
 
   const handleFileBrowse = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-      setFilename('')
+    setFileurl('')
+    setFileobject(null)
       if (e.target.checked){
         setFls(true)
       } else{
@@ -36,7 +42,8 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
   },[])
 
   const handleUrlupload = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setFilename('')
+    setFileurl('')
+    setFileobject(null)
     if (e.target.checked){
       setFls(false)
     } else{
@@ -44,62 +51,53 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
     }
   },[])
 
-  const onUrlChange = useCallback((e:ChangeEvent<HTMLInputElement>) => setFilename(e.target.value),[])
+  const onUrlChange = useCallback((e:ChangeEvent<HTMLInputElement>) => setFileurl(e.target.value),[])
 
-  const onFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files!.length <= 0 ) {
-        setFilename('')
-        console.error('No Files Chosen')
-        setError('No Files Chosen')
-        return;
-    }
+  const onFileChange = useCallback((e:ChangeEvent<HTMLInputElement>) => setFileobject(e.target.files![0]),[])
+
+  const onFileUpload = async () => {
     try {
-        const file = e.target.files![0]
         setError('')
-        setBtnDisabled(true);
+        setInputsDisabled(true);
         setChkBoxDisabled(true)
-        setFilename(file.name.toString())
-        console.log(`File Name ${file.name.toString()}`)
-        /* 
-        const fileUrl = URL.createObjectURL(file);
+        console.log(`File Name ${file_object!.name.toString()}`)
+        const fileUrl = URL.createObjectURL(file_object!);
         const response = await fetch(fileUrl);
         const text = await response.text();
         const lines = text.split("\n");
         const _data = lines.map((line) => line.split(","));
-        onChange(_data);
-        */
+        console.log(`Total Number of Sample ${_data.length}`)
     } catch (error) {
         console.error(error);
         setError('error')
     }
     finally{
-      
+      setBtnVisibility(true)
     }
   }
 
-  const fetch_url = async () => {
-    console.log(`File URL ${filename}`)
-    if (filename.length <= 0 ) {
+  const onFileDownload = async () => {
+    if (file_url.length <= 0 ) {
         console.error('No Files Chosen')
         setError('No Files Chosen')
         return;
     }
     setError('') 
-    setBtnDisabled(true)
+    setInputsDisabled(true)
     setChkBoxDisabled(true)
-    setFilename(filename)
-    console.log(`File URL ${filename}`)
+    console.log(`File URL ${file_url}`)
     try{
-      const response = await fetch(filename);
+      const response = await fetch(file_url);
       const text = await response.text();
       const lines = text.split("\n");
       const _data = lines.map((line) => line.split(","))
+      console.log(`Total Number of Sample ${_data.length}`)
     } catch (error) {
       console.error(error);
       setError('error')
     }
     finally{
-      
+      setBtnVisibility(true)
     }
   }
 
@@ -110,28 +108,30 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
                   <Checkbox label='Browse File' 
                             value={fileLoadScheme} 
                             onChange={handleFileBrowse} 
-                            disabled={chkbox_disabled}/>
+                            disabled={is_chkbox_disabled}/>
                   <Checkbox label='URL Upload' 
                             value={!fileLoadScheme} 
                             onChange={handleUrlupload} 
-                            disabled={chkbox_disabled}/>
+                            disabled={is_chkbox_disabled}/>
               </div>
               <SettingsBtn onClick = {()=>{}} />
         </div> 
         <div className='w-full'>
-            { fileLoadScheme && <FileBrowser  filename={filename} 
-                                              disabled ={btn_disabled} 
-                                              onChange={onFileChange} />}
-            { !fileLoadScheme && <FetchUrl    fileurl={filename} 
-                                              disabled = {btn_disabled}
+            { fileLoadScheme && <FileBrowser  file = {file_object}
+                                              disabled ={is_inputs_disabled} 
+                                              onChange={onFileChange} 
+                                              onUpload={onFileUpload}
+                                              ref = {file_bsrowser_ref}/>}
+            { !fileLoadScheme && <FetchUrl    fileurl={file_url} 
+                                              disabled = {is_inputs_disabled}
                                               onChange={onUrlChange} 
-                                              onSubmit={fetch_url} />}
+                                              onSubmit={onFileDownload} />}
         </div> 
         <div className="output-area">
             <div className='err-area'>
               { error && <span className='err-msg'>{error}</span> }
             </div>
-            <ResetBtn onClick={restOperation} invisble= {is_filename_empty()}/>
+            <ResetBtn onClick={restOperation} invisble= {!is_restbtn_visible}/>
         </div>
     </div>
   )

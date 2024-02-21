@@ -14,8 +14,8 @@ const FetchUrl: FunctionComponent<FetchUrlProps> = ({ fileurl, onChange, disable
 
     return (
         <div className="relative w-full">
-            <div className="absolute inset-y-0 start-0 flex items-center ps-3">
-                <i className="material-icon text-neutral-800 dark:text-neutral-300">link</i>
+            <div className="absolute inset-y-0 start-0 flex items-center me-4 py-2 px-4 bg-neutral-800 rounded-l-md">
+                <i className="material-icon bg-neutral-800 text-neutral-300 dark:text-neutral-300">link</i>
             </div>
             <input  type="text" 
                     id={inputId1}
@@ -25,7 +25,7 @@ const FetchUrl: FunctionComponent<FetchUrlProps> = ({ fileurl, onChange, disable
                     onChange={onChange}
                     placeholder="Paste Url, CSV / TSV File type allowed only ...." />
         
-            <button className={classNames("btn absolute end-2 bottom-2",{'invisible': is_url_empty()})} 
+            <button className={classNames("btn absolute end-1 bottom-1",{'invisible': is_url_empty()})} 
                     onClick={onSubmit}
                     disabled={disabled}>Fetch Data</button> 
         </div>

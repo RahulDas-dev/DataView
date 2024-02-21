@@ -42,7 +42,7 @@ body {
     }
 
     .input-box{
-        @apply inline-block w-full h-12 p-4 ps-10 ring-0 outline-0 text-sm border rounded-md shadow-sm focus:z-10;
+        @apply inline-block w-full h-10 p-4 ps-14 ring-0 outline-0 text-sm border rounded-md shadow-sm focus:z-10 text-ellipsis;
         @apply text-neutral-600 dark:text-white bg-neutral-50 dark:bg-neutral-600;
         @apply border-gray-300 focus:border-neutral-700 dark:border-neutral-500 dark:focus:border-neutral-400;
         @apply placeholder-neutral-500 dark:placeholder-neutral-400;
@@ -50,11 +50,11 @@ body {
     }
 
     .input-file{
-        @apply inline-block w-full h-12 ring-0 outline-0 text-sm border rounded-md shadow-sm  focus:z-10;
+        @apply inline-block w-full h-10 ring-0 outline-0 text-sm border rounded-md shadow-sm  focus:z-10 text-ellipsis;
         @apply text-neutral-600 dark:text-white bg-neutral-50 dark:bg-neutral-600;
         @apply border-gray-300 focus:border-neutral-700 dark:border-neutral-500 dark:focus:border-neutral-400;
         @apply disabled:opacity-50 disabled:pointer-events-none ;
-        @apply file:border-0 file:me-4 file:py-3 file:px-4 file:h-12 file:font-mono;
+        @apply file:border-0 file:me-4 file:py-2 file:px-4 file:h-10 file:font-mono;
         @apply file:bg-neutral-800 file:text-neutral-300 dark:file:bg-neutral-200 dark:file:text-neutral-700;
     }
     
