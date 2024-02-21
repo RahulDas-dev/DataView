@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 
 export default defineConfig({
+  base: '/DataView/',
   envDir:'env',
   envPrefix: ['VITE_','DB_'],
   plugins: [react()],

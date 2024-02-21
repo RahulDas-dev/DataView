@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { ReactElement, ChangeEvent, useId, forwardRef, useCallback, useState, useEffect  } from 'react'
+import { ReactElement, ChangeEvent, useId, forwardRef, useState, useEffect  } from 'react'
 
 
 export interface FileBrowserProps{
@@ -12,7 +12,7 @@ export interface FileBrowserProps{
 const FileBrowser = forwardRef<HTMLInputElement,FileBrowserProps>(({file, onChange, disabled, onUpload }, fref):ReactElement =>{
     const inputId  = useId();  
     const [is_file_empty, setEmptyState] = useState<boolean>(true)
-    
+
     useEffect(()=>{
         if (file == null){
             setEmptyState(true)
