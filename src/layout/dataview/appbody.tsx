@@ -1,7 +1,8 @@
 import { FunctionComponent, ReactElement   } from 'react'
 import './appbody.css';
 import Message from '../../components/dataview_msg/msg';
-import DataLoader from '../../components/dataloader/dataloader';
+import DataLoader from '../dataloader/dataloader';
+import DataTable from '../table/table';
 
 
 
@@ -10,6 +11,7 @@ const AppBody: FunctionComponent = ():ReactElement =>{
     <div className="app-body container">
         <Message />
         <DataLoader/>
+        <DataTable/>
     </div>
   )
 };

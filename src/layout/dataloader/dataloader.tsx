@@ -1,14 +1,18 @@
 import { FunctionComponent, ReactElement, useState, ChangeEvent, useCallback ,useRef  } from 'react'
 import './dataloader.css';
-import Checkbox from '../inputs/checkbox';
-import SettingsBtn from '../button/settingsbtn';
-import FileBrowser from '../inputs/file_browser';
-import FetchUrl from '../inputs/url_loader';
-import ResetBtn from '../button/resetbtn';
+import Checkbox from '../../components/inputs/checkbox';
+import SettingsBtn from '../../components/button/settingsbtn';
+import FileBrowser from '../../components/inputs/file_browser';
+import FetchUrl from '../../components/inputs/url_loader';
+import ResetBtn from '../../components/button/resetbtn';
+import { useDispatch } from 'react-redux';
+import { setData } from "../../store/dataSlice"
 
+import { readCSV, DataFrame } from "danfojs"
 
 const DataLoader: FunctionComponent = ():ReactElement =>{
 
+  const dispatch = useDispatch()
   const [fileLoadScheme, setFls] = useState<boolean>(true)
   const [file_url, setFileurl] = useState<string>('')
   const [file_object, setFileobject] = useState<File|null>(null)
@@ -30,6 +34,7 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
         console.log('Reset the input fileds')
         file_bsrowser_ref.current.value = "";
     }
+    dispatch(setData({data: new DataFrame()}))
   },[])
 
   const handleFileBrowse = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -63,11 +68,20 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
         setChkBoxDisabled(true)
         console.log(`File Name ${file_object!.name.toString()}`)
         const fileUrl = URL.createObjectURL(file_object!);
-        const response = await fetch(fileUrl);
+        /* const response = await fetch(fileUrl);
         const text = await response.text();
         const lines = text.split("\n");
-        const _data = lines.map((line) => line.split(","));
-        console.log(`Total Number of Sample ${_data.length}`)
+        const _data = lines.map((line) => line.split(",")); */
+        readCSV(fileUrl)
+        .then(df => {
+            df.print()
+            dispatch(setData({data: df}))
+        }).catch(err => {
+            console.log(err);
+        })
+        // data.describe().print()
+        // 
+        // console.log(`Total Number of Sample ${_data.length}`)
     } catch (error: any) {
       if (error instanceof Error){
           console.error(error.message);
@@ -95,11 +109,13 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
     try{
       const data_Url =new URL(file_url);
       console.log(`File URL ${data_Url}`)
-      const response = await fetch(data_Url);
-      const text = await response.text();
-      const lines = text.split("\n");
-      const _data = lines.map((line) => line.split(","))
-      console.log(`Total Number of Sample ${_data.length}`)
+      readCSV(file_url)
+      .then(df => {
+          df.print()
+          dispatch(setData({data: df}))
+      }).catch(err => {
+          console.log(err);
+      })
     } catch (error: any) {
         if (error instanceof Error){
             console.error(error);
