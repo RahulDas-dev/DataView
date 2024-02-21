@@ -24,6 +24,7 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
     setInputsDisabled(false)
     setError('')
     setFileurl('')
+    setFileobject(null)
     setBtnVisibility(false)
     if (file_bsrowser_ref.current){
         console.log('Reset the input fileds')
@@ -67,9 +68,14 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
         const lines = text.split("\n");
         const _data = lines.map((line) => line.split(","));
         console.log(`Total Number of Sample ${_data.length}`)
-    } catch (error) {
-        console.error(error);
-        setError('error')
+    } catch (error: any) {
+      if (error instanceof Error){
+          console.error(error.message);
+          setError(error.message)
+      } else{
+          console.error(error);
+          setError('Some Unknown Error .....')
+      }
     }
     finally{
       setBtnVisibility(true)
@@ -85,16 +91,23 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
     setError('') 
     setInputsDisabled(true)
     setChkBoxDisabled(true)
-    console.log(`File URL ${file_url}`)
+    
     try{
-      const response = await fetch(file_url);
+      const data_Url =new URL(file_url);
+      console.log(`File URL ${data_Url}`)
+      const response = await fetch(data_Url);
       const text = await response.text();
       const lines = text.split("\n");
       const _data = lines.map((line) => line.split(","))
       console.log(`Total Number of Sample ${_data.length}`)
-    } catch (error) {
-      console.error(error);
-      setError('error')
+    } catch (error: any) {
+        if (error instanceof Error){
+            console.error(error);
+            setError(error.message)
+        } else{
+            console.error(error);
+            setError('Some Unknown Error .....')
+        }
     }
     finally{
       setBtnVisibility(true)
@@ -128,9 +141,7 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
                                               onSubmit={onFileDownload} />}
         </div> 
         <div className="output-area">
-            <div className='err-area'>
-              { error && <span className='err-msg'>{error}</span> }
-            </div>
+            <div className='err-area'>{error}</div>
             <ResetBtn onClick={restOperation} invisble= {!is_restbtn_visible}/>
         </div>
     </div>

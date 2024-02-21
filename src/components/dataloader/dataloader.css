@@ -1,5 +1,5 @@
 .dataloader{
-    @apply w-full my-20 p-5 rounded-md bg-neutral-200 dark:bg-neutral-700 flex flex-col justify-center items-center gap-5;
+    @apply w-full my-20 p-5 rounded-md bg-neutral-300 dark:bg-neutral-700 flex flex-col justify-center items-center gap-5;
 }
 
 .dataloader>.settings-area{
@@ -15,9 +15,6 @@
 }
 
 .dataloader>.output-area>.err-area{
-    @apply block  rounded-md text-center align-middle bg-red-100 ;
+    @apply flex justify-center items-center rounded-md bg-inherit px-2 font-mono text-xs text-red-500;
 }
 
-.dataloader>.output-area>.err-area>.err-msg{
-    @apply p-1 font-mono text-xs text-red-500
-}

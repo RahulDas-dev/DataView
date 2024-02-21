@@ -1,4 +1,4 @@
-import { ChangeEvent, FunctionComponent, ReactElement, useCallback, useId   } from 'react'
+import { ChangeEvent, FunctionComponent, ReactElement, useCallback, useEffect, useId, useState   } from 'react'
 import classNames from 'classnames'
 
 export interface FetchUrlProps{
@@ -10,7 +10,16 @@ export interface FetchUrlProps{
 
 const FetchUrl: FunctionComponent<FetchUrlProps> = ({ fileurl, onChange, disabled, onSubmit }):ReactElement =>{
     const inputId1 = useId();
-    const is_url_empty = useCallback(() => fileurl.trim().length > 0 ? false: true,[fileurl])
+
+    const [is_url_empty, setEmptyState] = useState<boolean>(true)
+
+    useEffect(()=>{
+        if (fileurl.trim().length > 0 ){
+            setEmptyState(false)
+        } else{
+            setEmptyState(true)
+        }
+    },[fileurl])
 
     return (
         <div className="relative w-full">
@@ -19,13 +28,13 @@ const FetchUrl: FunctionComponent<FetchUrlProps> = ({ fileurl, onChange, disable
             </div>
             <input  type="text" 
                     id={inputId1}
-                    className="input-box" 
-                    readOnly = {disabled}
+                    className="input-box pr-32" 
+                    disabled = {disabled}
                     value={fileurl}
                     onChange={onChange}
-                    placeholder="Paste Url, CSV / TSV File type allowed only ...." />
+                    placeholder="Paste Url, CSV/TSV File type allowed only ...." />
         
-            <button className={classNames("btn absolute end-1 bottom-1",{'invisible': is_url_empty()})} 
+            <button className={classNames("btn absolute end-1 bottom-1",{'invisible': is_url_empty})} 
                     onClick={onSubmit}
                     disabled={disabled}>Fetch Data</button> 
         </div>

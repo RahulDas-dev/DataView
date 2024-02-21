@@ -18,7 +18,7 @@ const Checkbox: FunctionComponent<CheckboxProps> = ({ label, value, onChange, di
                     disabled={disabled}
                     id = {chkboxId}
                     className="check-box relative peer"/>
-            <label htmlFor={chkboxId} className="ms-2 text-sm font-mono font-medium text-neutral-600 dark:text-gray-300">{label}</label>
+            <label htmlFor={chkboxId} className="ms-2 text-sm font-mono font-medium text-neutral-700 dark:text-neutral-300">{label}</label>
             <svg className="absolute w-4 h-4 hidden peer-checked:block pointer-events-none stroke-white"
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"

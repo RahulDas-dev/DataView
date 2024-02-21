@@ -8,7 +8,7 @@ export interface ResetBtnProps{
 
 const ResetBtn: FunctionComponent<ResetBtnProps> = ({ onClick, invisble }):ReactElement =>{
     return (
-        <button className={classNames("btn","mr-2",{'invisible': invisble})} onClick={onClick}>
+        <button className={classNames("btn",{'invisible': invisble})} onClick={onClick}>
           Reset<i className="material-icon dark:text-zinc-900 text-neutral-300 pl-2">restart_alt</i>   
         </button>
     );

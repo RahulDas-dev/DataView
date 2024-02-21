@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { ReactElement, ChangeEvent, useId, forwardRef, useCallback  } from 'react'
+import { ReactElement, ChangeEvent, useId, forwardRef, useCallback, useState, useEffect  } from 'react'
 
 
 export interface FileBrowserProps{
@@ -10,8 +10,16 @@ export interface FileBrowserProps{
 }
 
 const FileBrowser = forwardRef<HTMLInputElement,FileBrowserProps>(({file, onChange, disabled, onUpload }, fref):ReactElement =>{
-    const inputId  = useId();   
-    const is_file_empty = () => (file == null) ? true: false
+    const inputId  = useId();  
+    const [is_file_empty, setEmptyState] = useState<boolean>(true)
+    
+    useEffect(()=>{
+        if (file == null){
+            setEmptyState(true)
+        } else{
+            setEmptyState(false)
+        }
+    },[file])
 
     return (
         <div className="relative w-full">
@@ -26,7 +34,7 @@ const FileBrowser = forwardRef<HTMLInputElement,FileBrowserProps>(({file, onChan
                 onChange={onChange}
                 className="input-file" />
 
-            <button className={classNames("btn absolute end-1 bottom-1",{'invisible': is_file_empty() })} 
+            <button className={classNames("btn absolute end-1 bottom-1",{'invisible': is_file_empty })} 
                     onClick={onUpload}
                     disabled={disabled}>Fetch Data</button>        
         </div>
