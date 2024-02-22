@@ -1,18 +1,20 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { Provider } from 'react-redux'
 import "@fontsource/nunito";
 import "@fontsource/poppins";
 import '@fontsource/material-icons';
-import { store } from './store'
 import App from './App.tsx'
 import './index.css'
 import  "danfojs"
+import DisplayModeContextProvider from './context/display_context.tsx';
+import DataContextProvider from './context/data_context.tsx';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <Provider store={store}>
-      <App />
-    </Provider>
+    <DisplayModeContextProvider>
+      <DataContextProvider>
+        <App />
+      </DataContextProvider>  
+    </DisplayModeContextProvider>
   </React.StrictMode>
 )

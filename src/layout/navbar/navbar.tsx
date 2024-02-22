@@ -1,7 +1,7 @@
-import { FunctionComponent, ReactElement, useState } from 'react';
+import { FunctionComponent, ReactElement, useContext, useState } from 'react';
 import classNames from 'classnames'
-import { useColorScheme } from '../../components/color_scheme/usecs';
 import './navbar.css';
+import { DisplayModeContext } from '../../context/display_context';
 
 export interface NavbarProps{
     
@@ -9,7 +9,7 @@ export interface NavbarProps{
 
 const Navbar: FunctionComponent<NavbarProps> = ():ReactElement =>{
     const [is_menu_closed, setMenu] = useState<boolean>(true);
-    let [color_scheme, toggleCs] = useColorScheme();
+    const {display_mode, toggleDisplayMode} = useContext(DisplayModeContext)
     return (
     <header className="nav-header" id='header-top'>    
         <nav className='navbar container'>
@@ -36,12 +36,12 @@ const Navbar: FunctionComponent<NavbarProps> = ():ReactElement =>{
                     </a>
                 </li>
                 <li className="nav__item">
-                    <button className="nav__link" onClick={() => toggleCs()}>
+                    <button className="nav__link" onClick={() => toggleDisplayMode()}>
                         { 
-                            (color_scheme == 'dark') && <i className="material-icon text-neutral-300">sunny</i>
+                            (display_mode == 'dark') && <i className="material-icon text-neutral-300">sunny</i>
                         }
                         {    
-                            (color_scheme != 'dark') && <i className="material-icon text-neutral-300">dark_mode</i>
+                            (display_mode != 'dark') && <i className="material-icon text-neutral-300">dark_mode</i>
                         }
                         <span className="md:hidden">Toggle Display Mode</span>
                     </button>

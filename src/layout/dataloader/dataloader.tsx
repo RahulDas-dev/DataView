@@ -1,18 +1,17 @@
-import { FunctionComponent, ReactElement, useState, ChangeEvent, useCallback ,useRef  } from 'react'
+import { FunctionComponent, ReactElement, useState, ChangeEvent, useCallback ,useRef, useContext  } from 'react'
 import './dataloader.css';
 import Checkbox from '../../components/inputs/checkbox';
 import SettingsBtn from '../../components/button/settingsbtn';
 import FileBrowser from '../../components/inputs/file_browser';
 import FetchUrl from '../../components/inputs/url_loader';
 import ResetBtn from '../../components/button/resetbtn';
-import { useDispatch } from 'react-redux';
-import { setData } from "../../store/dataSlice"
 
 import { readCSV, DataFrame } from "danfojs"
+import { DataContext } from '../../context/data_context';
 
 const DataLoader: FunctionComponent = ():ReactElement =>{
+  const {setDataFrame} = useContext(DataContext)
 
-  const dispatch = useDispatch()
   const [fileLoadScheme, setFls] = useState<boolean>(true)
   const [file_url, setFileurl] = useState<string>('')
   const [file_object, setFileobject] = useState<File|null>(null)
@@ -34,7 +33,7 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
         console.log('Reset the input fileds')
         file_bsrowser_ref.current.value = "";
     }
-    dispatch(setData({data: new DataFrame()}))
+    setDataFrame(new DataFrame())
   },[])
 
   const handleFileBrowse = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -68,19 +67,13 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
         setChkBoxDisabled(true)
         console.log(`File Name ${file_object!.name.toString()}`)
         const fileUrl = URL.createObjectURL(file_object!);
-        /* const response = await fetch(fileUrl);
-        const text = await response.text();
-        const lines = text.split("\n");
-        const _data = lines.map((line) => line.split(",")); */
         readCSV(fileUrl)
         .then(df => {
             df.print()
-            dispatch(setData({data: df}))
+            setDataFrame(df)
         }).catch(err => {
             console.log(err);
         })
-        // data.describe().print()
-        // 
         // console.log(`Total Number of Sample ${_data.length}`)
     } catch (error: any) {
       if (error instanceof Error){
@@ -112,7 +105,7 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
       readCSV(file_url)
       .then(df => {
           df.print()
-          dispatch(setData({data: df}))
+          setDataFrame(df)
       }).catch(err => {
           console.log(err);
       })

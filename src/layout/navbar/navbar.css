@@ -1,5 +1,5 @@
 .nav-header{
-    @apply fixed w-full top-0 left-0 z-50 shadow-sm shadow-indigo-500/40 dark:shadow-gray-400/50 transition-all ease-in-out delay-75 ;
+    @apply fixed w-full top-0 left-0 z-50 shadow-sm shadow-indigo-500/40 dark:shadow-gray-400/50 transition-all ease-in-out delay-75 bg-neutral-50 dark:bg-zinc-900;
   }
   
 .nav-header>.navbar{
