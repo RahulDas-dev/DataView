@@ -1,4 +1,3 @@
 .static-table{
-    @apply w-full my-20 rounded-md bg-neutral-300 dark:bg-neutral-700 flex flex-col justify-center items-center gap-5;
-    @apply overflow-scroll hover:overflow-scroll scrollbar, scrollbar-thumb-gray-700 scrollbar-track-gray-100;
+    @apply w-full mb-20 mt-40 rounded-md text-center block overflow-auto;
 }
