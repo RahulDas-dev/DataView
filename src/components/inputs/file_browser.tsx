@@ -19,6 +19,9 @@ const FileBrowser = forwardRef<HTMLInputElement,FileBrowserProps>(({file, onChan
         } else{
             setEmptyState(false)
         }
+        return () =>{
+            setEmptyState(true)
+        }
     },[file])
 
     return (

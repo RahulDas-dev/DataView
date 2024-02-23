@@ -19,6 +19,9 @@ const FetchUrl: FunctionComponent<FetchUrlProps> = ({ fileurl, onChange, disable
         } else{
             setEmptyState(true)
         }
+        return () =>{
+            setEmptyState(true)
+        }
     },[fileurl])
 
     return (

@@ -1,4 +1,4 @@
-import { createContext, useEffect, useMemo, useState } from "react";
+import { createContext, useState, useLayoutEffect } from "react";
 
 export type TDisplayMode = "dark" | "light";
 
@@ -19,25 +19,23 @@ const get_initial_dm: ()=>TDisplayMode = () => {
 const DisplayModeContextProvider = ({children}:{children: JSX.Element}) => {
     const [display_mode, setDisplayMode] = useState<TDisplayMode>(get_initial_dm());
     
-    useEffect(()=>{
+    useLayoutEffect(()=>{
         const root = window.document.documentElement
         if (display_mode == "dark"){
-            root.classList.remove('light');
             root.classList.add('dark');
         } else {
             root.classList.remove('dark');
-            root.classList.add('light');
         }
     },[display_mode]);
     
     const toggleDisplayMode: ()=> void = () => setDisplayMode((prev)=>(prev=='light'?'dark':'light'))
 
-    const context_values = useMemo(
+    /* const context_values = useMemo(
         () => ({display_mode, toggleDisplayMode}),
         [display_mode, toggleDisplayMode]
-    )
+    ) */
 
-    // const context_values = {dataframe, setDataFrame, display_mode, toggleDisplayMode }
+    const context_values = {display_mode, toggleDisplayMode }
 
     return <DisplayModeContext.Provider value={context_values}>
                 {children}
