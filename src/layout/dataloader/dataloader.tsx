@@ -1,4 +1,4 @@
-import { FunctionComponent, ReactElement, useState, ChangeEvent, useCallback ,useRef, useContext  } from 'react'
+import { FunctionComponent, ReactElement, ChangeEvent, useCallback ,useRef, useContext, useReducer  } from 'react'
 import './dataloader.css';
 import Checkbox from '../../components/inputs/checkbox';
 import SettingsBtn from '../../components/button/settingsbtn';
@@ -8,108 +8,91 @@ import ResetBtn from '../../components/button/resetbtn';
 
 import { readCSV, DataFrame } from "danfojs"
 import { DataContext } from '../../context/data_context';
+import { dataLoaderReducer, init_state, ActionType } from './reducer';
 
 const DataLoader: FunctionComponent = ():ReactElement =>{
-  const {setDataFrame} = useContext(DataContext)
-
-  const [fileLoadScheme, setFls] = useState<boolean>(true)
-  const [file_url, setFileurl] = useState<string>('')
-  const [file_object, setFileobject] = useState<File|null>(null)
-  const [is_chkbox_disabled, setChkBoxDisabled] = useState<boolean>(false)
-  const [is_inputs_disabled, setInputsDisabled] = useState<boolean>(false)
-  const [is_restbtn_visible, setBtnVisibility] = useState<boolean>(false)
   const file_bsrowser_ref = useRef<HTMLInputElement>(null);
-
-  const [error, setError] =useState<string>('')
+  const {setDataFrame} = useContext(DataContext)
+  const [state, dispatch] = useReducer(dataLoaderReducer, init_state);
 
   const restOperation = useCallback(() => {
-    setChkBoxDisabled(false)
-    setInputsDisabled(false)
-    setError('')
-    setFileurl('')
-    setFileobject(null)
-    setBtnVisibility(false)
+    dispatch({ type: ActionType.RESET_LOADER})
     if (file_bsrowser_ref.current){
-        console.log('Reset the input fileds')
         file_bsrowser_ref.current.value = "";
     }
     setDataFrame(new DataFrame())
   },[])
 
   const handleFileBrowse = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setFileurl('')
-    setFileobject(null)
+    dispatch({ type: ActionType.RESET_FILE_AND_URL})
       if (e.target.checked){
-        setFls(true)
+        dispatch({ type: ActionType.SET_LOAD_SCHEM_AS_FILE})
       } else{
-        setFls(false)
+        dispatch({ type: ActionType.SET_LOAD_SCHEM_AS_URL})
       }
   },[])
 
   const handleUrlupload = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setFileurl('')
-    setFileobject(null)
+    dispatch({ type: ActionType.RESET_FILE_AND_URL})
     if (e.target.checked){
-      setFls(false)
+        dispatch({ type: ActionType.SET_LOAD_SCHEM_AS_URL})
     } else{
-      setFls(true)
+        dispatch({ type: ActionType.SET_LOAD_SCHEM_AS_FILE})
     }
   },[])
 
-  const onUrlChange = useCallback((e:ChangeEvent<HTMLInputElement>) => setFileurl(e.target.value),[])
+  const onUrlChange = useCallback((e:ChangeEvent<HTMLInputElement>) =>{ 
+      dispatch({type:ActionType.SET_FILE_URL, payload:{file_url: e.target.value}})
+  },[])
 
-  const onFileChange = useCallback((e:ChangeEvent<HTMLInputElement>) => setFileobject(e.target.files![0]),[])
+  const onFileChange = useCallback((e:ChangeEvent<HTMLInputElement>) => {
+    dispatch({type:ActionType.SET_FILE_OBJECT, payload: {file_object: e.target.files![0]}})
+  },[])
 
   const onFileUpload = async () => {
     try {
-        setError('')
-        setInputsDisabled(true);
-        setChkBoxDisabled(true)
-        console.log(`File Name ${file_object!.name.toString()}`)
-        const fileUrl = URL.createObjectURL(file_object!);
+        console.log(`File Name ${state.file_object!.name.toString()}`)
+        dispatch({type:ActionType.URL_LOAD_INIT})
+        const fileUrl = URL.createObjectURL(state.file_object!);
         readCSV(fileUrl)
         .then(df => {
-            //df.print()
+            // df.print()
             console.log(`DataFrame Shape [${df.shape}] `)
             setDataFrame(df)
         }).catch(error => {
           if (error instanceof Error){
               console.error(error.message);
-              setError(error.message)
+              dispatch({type:ActionType.SET_ERROR, payload: {error: error.message}})
           } else{
               console.error(error);
-              setError('Some Unknown Error .....')
+              dispatch({type:ActionType.SET_UNKNOWN_ERROR})
           }
         })
-        // console.log(`Total Number of Sample ${_data.length}`)
     } catch (error: any) {
       if (error instanceof Error){
           console.error(error.message);
-          setError(error.message)
+          dispatch({type:ActionType.SET_ERROR, payload: {error: error.message}})
       } else{
           console.error(error);
-          setError('Some Unknown Error .....')
+          dispatch({type:ActionType.SET_UNKNOWN_ERROR})
       }
     }
     finally{
-      setBtnVisibility(true)
+      dispatch({type:ActionType.SET_RESET_BTN_VISIBLE})
     }
   }
 
   const onFileDownload = async () => {
-    if (file_url.length <= 0 ) {
+    if (state.file_url.length <= 0 ) {
         console.error('No Files Chosen')
-        setError('No Files Chosen')
+        dispatch({type:ActionType.SET_ERROR, payload: {error:'No Files Chosen'}})
         return;
     }
-    setError('') 
-    setInputsDisabled(true)
-    setChkBoxDisabled(true)
-    
+    dispatch({type:ActionType.URL_LOAD_INIT})
     try{
-      const data_Url =new URL(file_url);
+      const data_Url =new URL(state.file_url);
       console.log(`File URL ${data_Url}`)
-      readCSV(file_url)
+      readCSV(state.file_url)
       .then(df => {
           //df.print()
           console.log(`DataFrame Shape [${df.shape}] `)
@@ -117,23 +100,23 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
       }).catch(error => {
         if (error instanceof Error){
             console.error(error.message);
-            setError(error.message)
+            dispatch({type:ActionType.SET_ERROR, payload: {error: error.message}})
         } else{
             console.error(error);
-            setError('Some Unknown Error .....')
+            dispatch({type:ActionType.SET_UNKNOWN_ERROR})
         }
       })
     } catch (error: any) {
         if (error instanceof Error){
             console.error(error);
-            setError(error.message)
+            dispatch({type:ActionType.SET_ERROR, payload: {error: error.message}})
         } else{
             console.error(error);
-            setError('Some Unknown Error .....')
+            dispatch({type:ActionType.SET_UNKNOWN_ERROR})
         }
     }
     finally{
-      setBtnVisibility(true)
+      dispatch({type:ActionType.SET_RESET_BTN_VISIBLE})
     }
   }
 
@@ -142,30 +125,30 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
         <div className='settings-area'>
               <div className='block'>
                   <Checkbox label='Browse File' 
-                            value={fileLoadScheme} 
+                            value={state.file_load_scheme} 
                             onChange={handleFileBrowse} 
-                            disabled={is_chkbox_disabled}/>
+                            disabled={state.is_chkbox_disabled}/>
                   <Checkbox label='URL Upload' 
-                            value={!fileLoadScheme} 
+                            value={!state.file_load_scheme} 
                             onChange={handleUrlupload} 
-                            disabled={is_chkbox_disabled}/>
+                            disabled={state.is_chkbox_disabled}/>
               </div>
               <SettingsBtn onClick = {()=>{}} />
         </div> 
         <div className='w-full'>
-            { fileLoadScheme && <FileBrowser  file = {file_object}
-                                              disabled ={is_inputs_disabled} 
+            { state.file_load_scheme && <FileBrowser  file = {state.file_object}
+                                              disabled ={state.is_inputs_disabled} 
                                               onChange={onFileChange} 
                                               onUpload={onFileUpload}
                                               ref = {file_bsrowser_ref}/>}
-            { !fileLoadScheme && <FetchUrl    fileurl={file_url} 
-                                              disabled = {is_inputs_disabled}
+            { !state.file_load_scheme && <FetchUrl    fileurl={state.file_url} 
+                                              disabled = {state.is_inputs_disabled}
                                               onChange={onUrlChange} 
                                               onSubmit={onFileDownload} />}
         </div> 
         <div className="output-area">
-            <div className='err-area'>{error}</div>
-            <ResetBtn onClick={restOperation} invisble= {!is_restbtn_visible}/>
+            <div className='err-area'>{state.error}</div>
+            <ResetBtn onClick={restOperation} invisble= {!state.is_restbtn_visible}/>
         </div>
     </div>
   )
