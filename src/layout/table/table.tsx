@@ -2,13 +2,13 @@ import { FunctionComponent, ReactElement, useContext, useEffect, useRef, useStat
 import { DataContext } from '../../context/data_context';
 import classNames from 'classnames';
 import './table.css';
-import { LayoutContext } from '../../context/layout_context';
+import { DisplayModeContext } from '../../context/display_context';
 
 const DataTable: FunctionComponent = ():ReactElement =>{
     const table_ref = useRef<HTMLDivElement>(null)
     const [is_table_populated, setTableisPolulated] = useState<boolean>(true)
     const {dataframe} = useContext(DataContext)
-    const {layout, config} = useContext(LayoutContext)
+    const {layout, config} = useContext(DisplayModeContext)
     useEffect(()=>{
         if (dataframe.size > 0){
             setTableisPolulated(true)

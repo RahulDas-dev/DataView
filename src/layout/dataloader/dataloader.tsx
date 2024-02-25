@@ -69,10 +69,17 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
         const fileUrl = URL.createObjectURL(file_object!);
         readCSV(fileUrl)
         .then(df => {
-            df.print()
+            //df.print()
+            console.log(`DataFrame Shape [${df.shape}] `)
             setDataFrame(df)
-        }).catch(err => {
-            console.log(err);
+        }).catch(error => {
+          if (error instanceof Error){
+              console.error(error.message);
+              setError(error.message)
+          } else{
+              console.error(error);
+              setError('Some Unknown Error .....')
+          }
         })
         // console.log(`Total Number of Sample ${_data.length}`)
     } catch (error: any) {
@@ -104,10 +111,17 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
       console.log(`File URL ${data_Url}`)
       readCSV(file_url)
       .then(df => {
-          df.print()
+          //df.print()
+          console.log(`DataFrame Shape [${df.shape}] `)
           setDataFrame(df)
-      }).catch(err => {
-          console.log(err);
+      }).catch(error => {
+        if (error instanceof Error){
+            console.error(error.message);
+            setError(error.message)
+        } else{
+            console.error(error);
+            setError('Some Unknown Error .....')
+        }
       })
     } catch (error: any) {
         if (error instanceof Error){
