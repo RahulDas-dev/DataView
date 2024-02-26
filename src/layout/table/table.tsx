@@ -13,6 +13,7 @@ const DataTable: FunctionComponent = ():ReactElement =>{
         if (dataframe.size > 0){
             setTableisPolulated(true)
             dataframe.plot('table_plot_area').table({config,layout})
+            table_ref.current!.scrollIntoView({block: "start", inline: "nearest", behavior: 'smooth'});
         }else{
             setTableisPolulated(false)
             const table = table_ref.current

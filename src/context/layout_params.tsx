@@ -12,11 +12,14 @@ export interface IHeaderStyle {
     align: string,
     fill: { color: string },
     font: { family: string, size: number, color: string },
+    
 }
 
 export interface ICellStyle {
     align: string[],
-    line: { color: string, width: number }
+    fill: { color: string },
+    line: { color: string, width: number },
+    font: { family: string, size: number, color: string },
 }
 
 export interface Iconfig {
@@ -45,11 +48,14 @@ export const inittail_config: Iconfig = {
     tableHeaderStyle: {
         align: "center",
         fill: { color: 'lightgrey' },
-        font: { family: "Poppins", size: 10, color: "black" },    
+        font: { family: "Nunito", size: 10, color: "black" },
+        
     },
     tableCellStyle:  {
         align: ["left"],
-        line: { color: "black", width: 0.1 }
+        fill: { color: 'lightgrey' },
+        line: { color: "black", width: 0.1 },
+        font: { family: "Nunito", size: 12, color: "black" }, 
     },
     sendData: false
   }

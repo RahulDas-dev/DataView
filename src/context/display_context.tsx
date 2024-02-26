@@ -45,8 +45,9 @@ const DisplayModeContextProvider = ({children}:{children: JSX.Element}) => {
                 ...config,
                 tableHeaderStyle: {
                     ...config.tableHeaderStyle,
+                    fill: { color: display_mode=="dark" ?  "rgb(64 64 64)" :"rgb(212 212 212)" },
                     font: { ...config.tableHeaderStyle.font, 
-                            color: display_mode=="dark" ? "white": "black"
+                            color: display_mode=="dark" ? "rgb(212 212 212)": "rgb(38 38 38)"
                         },  
                         
                 },
@@ -55,7 +56,10 @@ const DisplayModeContextProvider = ({children}:{children: JSX.Element}) => {
                     line: { ...config.tableCellStyle.line,
                             color: display_mode=="dark" ? "white": "black", 
                     },
-                    fill:{ color: display_mode=="dark" ? "rgb(115 115 115)": "rgb(212 212 212)" }  
+                    fill:{ color: display_mode=="dark" ? "rgb(82 82 82)": "rgb(245 245 245)" },
+                    font: { ...config.tableCellStyle.font, 
+                        color: display_mode=="dark" ? "rgb(212 212 212)": "rgb(38 38 38)"
+                    },  
                 }
               }
         })

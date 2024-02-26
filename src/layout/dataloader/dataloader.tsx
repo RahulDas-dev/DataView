@@ -6,7 +6,7 @@ import FileBrowser from '../../components/inputs/file_browser';
 import FetchUrl from '../../components/inputs/url_loader';
 import ResetBtn from '../../components/button/resetbtn';
 
-import { readCSV, DataFrame } from "danfojs"
+import { readCSV, DataFrame } from "danfojs";
 import { DataContext } from '../../context/data_context';
 import { dataLoaderReducer, init_state, ActionType } from './reducer';
 
@@ -49,7 +49,7 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
     dispatch({type:ActionType.SET_FILE_OBJECT, payload: {file_object: e.target.files![0]}})
   },[])
 
-  const onFileUpload = async () => {
+  const onFileUpload = useCallback(async () => {
     try {
         console.log(`File Name ${state.file_object!.name.toString()}`)
         dispatch({type:ActionType.URL_LOAD_INIT})
@@ -80,9 +80,9 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
     finally{
       dispatch({type:ActionType.SET_RESET_BTN_VISIBLE})
     }
-  }
+  },[state])
 
-  const onFileDownload = async () => {
+  const onFileDownload = useCallback(async () => {
     if (state.file_url.length <= 0 ) {
         console.error('No Files Chosen')
         dispatch({type:ActionType.SET_ERROR, payload: {error:'No Files Chosen'}})
@@ -118,7 +118,7 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
     finally{
       dispatch({type:ActionType.SET_RESET_BTN_VISIBLE})
     }
-  }
+  },[state])
 
   return (
     <div className="dataloader">  
