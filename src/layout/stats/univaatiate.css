@@ -3,9 +3,13 @@
 }
 
 .chart-area{
-    @apply text-center;
+    @apply text-center mb-20;
 }
 
 .chart-area>.chart-header{
-    @apply text-center text-lg font-mono;
+    @apply text-center text-lg font-mono m-10 ;
+}
+
+.chart-area>.chart-section{
+    @apply flex flex-row gap-5 h-48 justify-between items-start w-full;
 }

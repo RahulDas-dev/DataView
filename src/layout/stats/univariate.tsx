@@ -1,7 +1,7 @@
 import { FunctionComponent, ReactElement, useContext, useEffect, useState   } from 'react'
 import { DataContext } from '../../context/data_context';
 import BarChart from './barchart';
-
+import './univaatiate.css';
 
 interface Ctype{
     col_name: string| number
