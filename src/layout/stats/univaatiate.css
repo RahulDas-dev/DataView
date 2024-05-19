@@ -19,7 +19,7 @@
 }
 
 .chart-area>.chart-section>.chart-body{
-    @apply sm:w-full md:w-2/3 block sm:h-80;
+    @apply sm:w-full md:w-2/3 block sm:h-80 ;
 }
 
 .chart-area>.chart-section>.chart-body>.chart-option {

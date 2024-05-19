@@ -80,7 +80,7 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
     finally{
       dispatch({type:ActionType.SET_RESET_BTN_VISIBLE})
     }
-  },[state, setDataFrame])
+  },[state])
 
   const onFileDownload = useCallback(async () => {
     if (state.file_url.length <= 0 ) {
@@ -118,7 +118,7 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
     finally{
       dispatch({type:ActionType.SET_RESET_BTN_VISIBLE})
     }
-  },[state, setDataFrame])
+  },[state])
 
   return (
     <div className="dataloader">  

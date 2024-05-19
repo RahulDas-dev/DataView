@@ -19,7 +19,7 @@ const UnivariateState: FunctionComponent = ():ReactElement =>{
         return ()=>{
             setCtypetable([])
         }
-    },[])
+    },[dataframe])
 
     return (
         <div className='univariate-area'>
