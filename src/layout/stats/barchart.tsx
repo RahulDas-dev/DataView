@@ -1,4 +1,4 @@
-import { FunctionComponent, ReactElement, useContext, useEffect, useId, useRef } from 'react'
+import { FunctionComponent, ReactElement, useContext, useEffect, useId, useRef, useState } from 'react'
 import { DataContext } from '../../context/data_context';
 import { DisplayModeContext } from '../../context/display_context';
 import { DataFrame, Series } from 'danfojs';
@@ -13,10 +13,19 @@ interface StatData{
     value: number
 }
 
+enum EplotOption{
+    histogram = "histogram",
+    boxplot = "boxplot",
+    violinplot = "violine",
+    densityplot = 'densityplot'
+}
+
 
 const BarChart: FunctionComponent<IchartProp> = ({name}):ReactElement =>{
     const plot_ref = useRef<HTMLDivElement>(null)
     const stat_ref = useRef<HTMLDivElement>(null)
+    const [plotOption, SetPlotOption] = useState<EplotOption>(EplotOption.histogram)
+
     const graphid = useId()
     const statid = useId()
     const {dataframe} = useContext(DataContext)
@@ -53,9 +62,19 @@ const BarChart: FunctionComponent<IchartProp> = ({name}):ReactElement =>{
             },
             opacity: 0.75, 
         };
+        const graph = plot_ref.current
+        while( graph && graph.firstChild){
+            graph.removeChild(graph.firstChild)
+        }
         if (dataframe.size > 0){
-            dataframe[name].plot(graphid).hist({ layout:layout_g, config:config_g })
-            plot_ref.current!.scrollIntoView({block: "start", inline: "nearest", behavior: 'smooth'});
+            if (plotOption == EplotOption.histogram)
+                dataframe[name].plot(graphid).hist({ layout:layout_g, config:config_g })
+            else if (plotOption == EplotOption.boxplot){
+                dataframe[name].plot(graphid).box({ layout:layout_g, config:config_g })
+            }else if (plotOption == EplotOption.violinplot){
+                dataframe[name].plot(graphid).violin({ layout:layout_g, config:config_g })
+            }
+            // plot_ref.current!.scrollIntoView({block: "start", inline: "nearest", behavior: 'smooth'});
             const stat: Series = dataframe[name].describe()
             const stat_list: StatData[]  = stat.values.map(function(e, i) {
                 return {stat: String(stat.index[i]), value: Number(e)};
@@ -69,7 +88,7 @@ const BarChart: FunctionComponent<IchartProp> = ({name}):ReactElement =>{
                 graph.removeChild(graph.firstChild)
             }
         }
-    },[dataframe, graphid, statid])
+    },[dataframe, graphid, statid, plotOption, layout, config])
 
     return (
         <div className='chart-area'>
@@ -79,13 +98,21 @@ const BarChart: FunctionComponent<IchartProp> = ({name}):ReactElement =>{
                 <div className='chart-body'>
                     <div className='chart-option'>
                         <Checkbox label='Histogram' 
-                                value={true} 
-                                onChange={()=>{}} 
+                                value={plotOption == EplotOption.histogram} 
+                                onChange={() => SetPlotOption(EplotOption.histogram)} 
                                 disabled={false}/>
                         <Checkbox label='Box Plot' 
-                                value={false} 
-                                onChange={()=>{}} 
+                                value={plotOption == EplotOption.boxplot} 
+                                onChange={() => SetPlotOption(EplotOption.boxplot)} 
                                 disabled={false}/>
+                        {/* <Checkbox label='Violin Plot' 
+                                value={plotOption == EplotOption.densityplot} 
+                                onChange={() => SetPlotOption(EplotOption.densityplot)} 
+                                disabled={false}/> */}
+                        <Checkbox label='Violin Plot' 
+                                value={plotOption == EplotOption.violinplot} 
+                                onChange={() => SetPlotOption(EplotOption.violinplot)} 
+                                disabled={false}/>                
                     </div>
                     <div className='plot-area' id={graphid} ref={plot_ref}></div>
                 </div>
