@@ -11,5 +11,17 @@
 }
 
 .chart-area>.chart-section{
-    @apply flex flex-row gap-5 h-48 justify-between items-start w-full;
+    @apply flex sm:flex-col md:flex-row  gap-5 h-48 justify-between items-start w-full;
+}
+
+.chart-area>.chart-section>.chart-stat{
+    @apply sm:w-full md:w-1/3 ;
+}
+
+.chart-area>.chart-section>.chart-body{
+    @apply sm:w-full md:w-2/3 block sm:h-80;
+}
+
+.chart-area>.chart-section>.chart-body>.chart-option {
+    @apply block w-full h-9;
 }

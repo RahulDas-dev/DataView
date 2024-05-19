@@ -21,7 +21,7 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
         file_bsrowser_ref.current.value = "";
     }
     setDataFrame(new DataFrame())
-  },[])
+  },[setDataFrame])
 
   const handleFileBrowse = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     dispatch({ type: ActionType.RESET_FILE_AND_URL})
@@ -68,7 +68,7 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
               dispatch({type:ActionType.SET_UNKNOWN_ERROR})
           }
         })
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof Error){
           console.error(error.message);
           dispatch({type:ActionType.SET_ERROR, payload: {error: error.message}})
@@ -80,7 +80,7 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
     finally{
       dispatch({type:ActionType.SET_RESET_BTN_VISIBLE})
     }
-  },[state])
+  },[state, setDataFrame])
 
   const onFileDownload = useCallback(async () => {
     if (state.file_url.length <= 0 ) {
@@ -106,7 +106,7 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
             dispatch({type:ActionType.SET_UNKNOWN_ERROR})
         }
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
         if (error instanceof Error){
             console.error(error);
             dispatch({type:ActionType.SET_ERROR, payload: {error: error.message}})
@@ -118,7 +118,7 @@ const DataLoader: FunctionComponent = ():ReactElement =>{
     finally{
       dispatch({type:ActionType.SET_RESET_BTN_VISIBLE})
     }
-  },[state])
+  },[state, setDataFrame])
 
   return (
     <div className="dataloader">  

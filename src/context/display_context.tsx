@@ -63,7 +63,7 @@ const DisplayModeContextProvider = ({children}:{children: JSX.Element}) => {
                 }
               }
         })
-    },[display_mode]);
+    },[display_mode, layout, config]);
     
     const toggleDisplayMode: ()=> void = () => setDisplayMode((prev)=>(prev=='light'?'dark':'light'))
 

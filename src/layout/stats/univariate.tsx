@@ -26,7 +26,7 @@ const UnivariateState: FunctionComponent = ():ReactElement =>{
             {
                 table_ctype.map((item: Ctype) => {
                     if (['float32', 'int32', 'float64'].includes(item.dtype) ) {
-                        return <BarChart name={item.col_name}/>;
+                        return <BarChart name={item.col_name} key={item.col_name}/>;
                     } else if (['bool', 'string'].includes(item.dtype) ) {
                         return <div>{item.col_name}</div>;
                     }
