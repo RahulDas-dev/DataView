@@ -35,7 +35,7 @@ export interface Iconfig {
 export const inittail_layout: ILayout ={
     // title: "Table displaying the Titanic dataset",
     automargin: true,
-    //height: 200,
+    height: 450,
     //height: 450,
     //width: 700,
     autosize: true,

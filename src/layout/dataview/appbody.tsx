@@ -3,7 +3,7 @@ import './appbody.css';
 import Message from '../../components/dataview_msg/msg';
 import DataLoader from '../dataloader/dataloader';
 import DataTable from '../table/table';
-import UnivariateState from '../stats/univariate';
+import UnivariateState from '../stats/univariate/univariate';
 import { DataContext } from '../../context/data_context';
 
 

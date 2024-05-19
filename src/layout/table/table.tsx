@@ -32,9 +32,10 @@ const DataTable: FunctionComponent = ():ReactElement =>{
 
     return (
         <div className={classNames('static-table', {'h-96': is_table_populated,
-                                                    //'dark:bg-neutral-700': is_table_populated,
-                                                    //'bg-neutral-300': is_table_populated
-                                                  })}>
+                                                   //'dark:bg-neutral-700': is_table_populated,
+                                                   //'bg-neutral-300': is_table_populated
+                                                   }
+                                                  )}>
             <div id='table_plot_area' ref={table_ref}></div>
         </div>
     )
