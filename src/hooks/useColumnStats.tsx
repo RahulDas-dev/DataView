@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { DataFrame } from 'danfojs';
 
 // Type definitions for our statistics return values
 export interface BaseStats {
@@ -78,7 +79,7 @@ const safelyExecute = <T,>(fn: () => T, fallback: T): T => {
  * @param selectedColumn The name of the column to compute statistics for
  * @returns An object containing various statistics for the column
  */
-const useColumnStats = (dataFrame: any, selectedColumn: string | null): ColumnStats => {
+const useColumnStats = (dataFrame: DataFrame, selectedColumn: string | null): ColumnStats => {
   return useMemo(() => {
     // Return empty stats if dataFrame or selectedColumn isn't available yet
     if (!selectedColumn || !dataFrame) {

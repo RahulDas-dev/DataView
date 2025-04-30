@@ -1,6 +1,7 @@
 import { FunctionComponent, ReactElement } from 'react';
 import { useData } from '../hooks/useData';
 import DataLoader from './DataLoader';
+import DataSummary from './DataSummary';
 import DataTable from './DataTable';
 import UnivariateStats from './UnivariateStats';
 
@@ -22,6 +23,7 @@ const Appbody: FunctionComponent = (): ReactElement => {
       </div>
       <DataLoader />
       {is_table_populated && <DataTable />}
+      {is_table_populated && <DataSummary />}
       {is_table_populated && <UnivariateStats />}
     </div>
   );
