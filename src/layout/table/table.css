@@ -1,6 +1,0 @@
-.static-table{
-    @apply w-full mb-20 mt-40 text-center block overflow-auto ;
-    @apply scrollbar-thumb-rounded-full scrollbar-thin overflow-y-scroll;
-    @apply scrollbar-track-neutral-200 dark:scrollbar-track-neutral-600;
-    @apply scrollbar-thumb-neutral-800 dark:scrollbar-thumb-neutral-400;
-}

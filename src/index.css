@@ -1,89 +1,184 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 
-html {
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-montserrat: 'Montserrat', sans-serif;
+}
+@layer base {
+  :root {
+    color-scheme: light dark;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
     @apply scroll-smooth;
-}
-  
-body {
-    @apply antialiased font-body text-gray-600 bg-neutral-50 dark:text-gray-400 dark:bg-zinc-900;
-    -moz-osx-font-smoothing: grayscale;
-}
-  
+  }
 
-@layer components{
-    .container {
-        @apply lg:max-w-5xl md:w-11/12 md:max-w-none sm:w-11/12 mx-auto ;
-    }
-    .btn {
-        @apply font-mono tracking-tight text-xs px-4 py-2 rounded-md ring-0 outline-0 disabled:opacity-50;
-        @apply text-white bg-neutral-800 hover:bg-neutral-700 ;
-        @apply dark:text-neutral-950 dark:bg-neutral-300 dark:hover:bg-neutral-400;
-        @apply disabled:hover:bg-neutral-800 disabled:hover:dark:bg-neutral-300;
-    }
+  /* Remove spinner buttons from number inputs globally */
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
 
-    .btn-icon {
-        @apply text-xs p-0 m-0 rounded-md ring-0 outline-0 disabled:opacity-25;
-        @apply bg-transparent opacity-75 hover:opacity-100;
-    }
-
-    
-    .check-box{
-        @apply w-4 h-4 rounded-sm outline-none ring-0 appearance-none shrink-0 ;
-        @apply text-neutral-300 bg-neutral-500 border-neutral-500;
-        @apply dark:text-neutral-200 dark:bg-neutral-400 dark:border-neutral-600;
-        @apply checked:bg-neutral-800 checked:border-0;
-        @apply disabled:opacity-50 disabled:pointer-events-none;
-    }
-
-    input::placeholder {
-        @apply font-mono opacity-50;
-    }
-
-    .input-box{
-        @apply inline-block w-full h-10 p-4 ps-14 ring-0 outline-0 text-sm border rounded-md shadow-sm focus:z-10 text-ellipsis;
-        @apply text-neutral-600 dark:text-white bg-neutral-50 dark:bg-neutral-600;
-        @apply border-gray-300 focus:border-neutral-700 dark:border-neutral-500 dark:focus:border-neutral-400;
-        @apply placeholder-neutral-500 dark:placeholder-neutral-400;
-        @apply disabled:opacity-50 disabled:pointer-events-none disabled:focus:border-gray-300 disabled:focus:dark:border-neutral-500;
-    }
-
-    .input-file{
-        @apply inline-block w-full h-10 ring-0 outline-0 text-sm border rounded-md shadow-sm  focus:z-10 text-ellipsis;
-        @apply text-neutral-600 dark:text-white bg-neutral-50 dark:bg-neutral-600;
-        @apply border-gray-300 focus:border-neutral-700 dark:border-neutral-500 dark:focus:border-neutral-400;
-        @apply disabled:opacity-50 disabled:pointer-events-none ;
-        @apply file:border-0 file:me-4 file:py-2 file:px-4 file:h-full file:font-mono;
-        @apply file:bg-neutral-800 file:text-neutral-300 dark:file:bg-neutral-200 dark:file:text-neutral-700;
-    }
-    
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
 }
 
 
+.custom-scrollbar::-webkit-scrollbar-track {
+  background-color: #f4f4f5; /* zinc-100 */
+}
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background-color: #27272a; /* zinc-800 */
+}
 
-.material-icon {
-    font-family: 'Material Icons';
-    vertical-align: middle;
-    font-weight: normal;
-    font-style: normal;
-    font-size: 18px;  /* Preferred icon size */
-    display: inline-block;
-    line-height: 1;
-    text-transform: none;
-    letter-spacing: normal;
-    word-wrap: normal;
-    white-space: nowrap;
-    direction: ltr;
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #d4d4d8; /* zinc-300 */
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #a1a1aa; /* zinc-400 */
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #52525b; /* zinc-600 */
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #71717a; /* zinc-500 */
+}
 
-    /* Support for all WebKit browsers. */
-    -webkit-font-smoothing: antialiased;
-    /* Support for Safari and Chrome. */
-    text-rendering: optimizeLegibility;
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #d4d4d8 #f4f4f5; /* zinc-300 zinc-100 */
+}
+.dark .custom-scrollbar {
+  scrollbar-color: #52525b #27272a; /* zinc-600 zinc-800 */
+}
 
-    /* Support for Firefox. */
-    -moz-osx-font-smoothing: grayscale;
+@layer components {
+  .container {
+    @apply w-full mx-auto max-w-[1400px] px-4 sm:px-6 md:px-8 lg:px-16 xl:px-32;
+  }
 
-    /* Support for IE. */
-    font-feature-settings: 'liga';
+  .container-sm {
+    @apply w-full mx-auto max-w-3xl px-4 sm:px-6 md:px-8;
+  }
+
+  .container-md {
+    @apply w-full mx-auto max-w-5xl px-4 sm:px-6 md:px-8 lg:px-16;
+  }
+
+  .container-lg {
+    @apply w-full mx-auto max-w-7xl px-4 sm:px-6 md:px-8 lg:px-16 xl:px-32;
+  }
+
+  .no-spinner::-webkit-outer-spin-button,
+  .no-spinner::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .no-spinner {
+    -moz-appearance: textfield;
+  }
+
+  /* Button Styles */
+  .btn {
+    @apply rounded transition duration-200 ease-in-out flex items-center justify-center gap-2 font-mono text-xs cursor-pointer;
+  }
+
+  .btn-primary {
+    @apply bg-zinc-900 text-white hover:bg-black dark:bg-zinc-800 dark:hover:bg-zinc-700 
+      disabled:bg-zinc-300 dark:disabled:bg-zinc-700 disabled:cursor-not-allowed;
+  }
+
+  .btn-success {
+    @apply bg-zinc-800 text-white hover:bg-black dark:bg-black dark:hover:bg-zinc-900 
+      disabled:bg-zinc-400 dark:disabled:bg-zinc-800 disabled:cursor-not-allowed;
+  }
+
+  .btn-icon {
+    @apply bg-transparent text-zinc-500 dark:text-zinc-400 dark:hover:text-zinc-300 
+      disabled:bg-transparent disabled:text-zinc-400;
+  }
+
+  .btn-link {
+    @apply bg-transparent text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300 
+      underline hover:no-underline disabled:text-zinc-400 dark:disabled:text-zinc-600 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-zinc-200 text-zinc-700 hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600
+      disabled:bg-zinc-100 dark:disabled:bg-zinc-800 disabled:cursor-not-allowed;
+  }
+
+  .btn-danger {
+    @apply bg-zinc-700 text-white hover:bg-zinc-800 dark:bg-zinc-900 dark:hover:bg-black
+      disabled:bg-zinc-400 dark:disabled:bg-zinc-800 disabled:cursor-not-allowed;
+  }
+
+  .btn-small {
+    @apply px-3 py-1.5;
+  }
+
+  .btn-normal {
+    @apply w-full px-4 py-2;
+  }
+
+  /* Tooltip Styles */
+  .tooltip {
+    @apply relative inline-block;
+  }
+
+  .tooltip:before {
+    @apply content-[attr(data-tooltip)] absolute z-10 px-2 py-1 text-xs font-medium text-white bg-zinc-800 dark:bg-zinc-700 rounded shadow-sm opacity-0 invisible transition-opacity duration-200;
+  }
+
+  .tooltip:after {
+    @apply content-[''] absolute border-[5px] border-solid opacity-0 invisible transition-opacity duration-200;
+  }
+
+  .tooltip:hover:before,
+  .tooltip:hover:after {
+    @apply opacity-100 visible;
+  }
+
+  /* Tooltip positions */
+  .tooltip-top:before {
+    @apply bottom-[calc(100%+5px)] left-1/2 -translate-x-1/2;
+  }
+
+  .tooltip-top:after {
+    @apply bottom-full left-1/2 -translate-x-1/2 border-t-zinc-800 dark:border-t-zinc-700 border-r-transparent border-l-transparent border-b-transparent;
+  }
+
+  .tooltip-bottom:before {
+    @apply top-[calc(100%+5px)] left-1/2 -translate-x-1/2;
+  }
+
+  .tooltip-bottom:after {
+    @apply top-full left-1/2 -translate-x-1/2 border-b-zinc-800 dark:border-b-zinc-700 border-r-transparent border-l-transparent border-t-transparent;
+  }
+
+  .tooltip-left:before {
+    @apply right-[calc(100%+5px)] top-1/2 -translate-y-1/2;
+  }
+
+  .tooltip-left:after {
+    @apply right-full top-1/2 -translate-y-1/2 border-l-zinc-800 dark:border-l-zinc-700 border-t-transparent border-b-transparent border-r-transparent;
+  }
+
+  .tooltip-right:before {
+    @apply left-[calc(100%+5px)] top-1/2 -translate-y-1/2;
+  }
+
+  .tooltip-right:after {
+    @apply left-full top-1/2 -translate-y-1/2 border-r-zinc-800 dark:border-r-zinc-700 border-t-transparent border-b-transparent border-l-transparent;
+  }
 }

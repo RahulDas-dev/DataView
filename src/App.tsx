@@ -1,19 +1,16 @@
-
-import './App.css'
-import AppBody from './layout/dataview/appbody';
-import Footer from './layout/footer/footer';
-import Navbar from './layout/navbar/navbar';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import TitleBar from './components/TitleBar';
+import Appbody from './components/Appbody';
 
 function App() {
   return (
-    <div className='h-full bg-inherit'>
-      <Navbar />
-      <AppBody />
-      <div className='p-10 text-red-400 text-center uppercase'>page is under construction ! </div>
-      <Footer />
-      
-    </div>  
-  )
+    <ErrorBoundary>
+      <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
+        <TitleBar />
+        <Appbody />
+      </div>
+    </ErrorBoundary>
+  );
 }
 
-export default App
+export default App;

@@ -1,22 +1,49 @@
 /** @type {import('tailwindcss').Config} */
+
 export default {
-  darkMode: "class",
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
-      fontFamily: {
-        body: ["Poppins,Nunito, sans-serif"],
+      colors: {
+        gray: {
+          750: '#2d3748', // A mid-dark gray for the dark theme
+        },
       },
-      screens: {
-        'sm': '360px',
+      animation: {
+        'fadeIn': 'fadeIn 0.3s ease-in-out',
+        'slideInRight': 'slideInRight 0.3s ease-out',
+        'slideOutRight': 'slideOutRight 0.3s ease-in',
+        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideInRight: {
+          '0%': { transform: 'translateX(100%)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
+        slideOutRight: {
+          '0%': { transform: 'translateX(0)', opacity: '1' },
+          '100%': { transform: 'translateX(100%)', opacity: '0' },
+        },
+      },
+      transitionProperty: {
+        'height': 'height',
+        'spacing': 'margin, padding',
+      },
+      boxShadow: {
+        'card': '0 2px 4px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1)',
+      },
+      borderRadius: {
+        'xl': '1rem',
       },
     },
   },
-  plugins: [
-    require('tailwind-scrollbar')({nocompatible: true ,preferredStrategy: 'pseudoelements'})
-  ],
+  plugins: [],
 }
-
