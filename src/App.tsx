@@ -2,7 +2,6 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import TitleBar from './components/TitleBar';
 import Appbody from './components/Appbody';
 
-
 function App() {
   return (
     <ErrorBoundary>

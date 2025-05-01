@@ -37,6 +37,7 @@ export const init_state: DataLoaderState = {
 // Define action type
 export type DataLoaderAction = {
   type: ActionType;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload?: any;
 };
 

@@ -18,14 +18,6 @@ const SettingsProvider = ({ children }: SettingsProviderProps) => {
           ...prevSettings,
           ...parsedSettings
         }));
-        
-        // Update session storage for environment variables
-        if (parsedSettings.rowsPerPage) {
-          window.sessionStorage.setItem('VITE_ROWS_PER_PAGE', parsedSettings.rowsPerPage.toString());
-        }
-        if (parsedSettings.maxColsToShow) {
-          window.sessionStorage.setItem('VITE_MAX_COLS_TO_SHOW', parsedSettings.maxColsToShow.toString());
-        }
       } catch (error) {
         console.error('Error parsing saved settings:', error);
       }
@@ -37,17 +29,8 @@ const SettingsProvider = ({ children }: SettingsProviderProps) => {
     setSettings(prevSettings => {
       const updatedSettings = { ...prevSettings, ...newSettings };
       
-      // Save to localStorage
+      console.log('Updated settings:', updatedSettings);
       localStorage.setItem('dataview_settings', JSON.stringify(updatedSettings));
-      
-      // Update environment variables
-      if (newSettings.rowsPerPage) {
-        window.sessionStorage.setItem('VITE_ROWS_PER_PAGE', newSettings.rowsPerPage.toString());
-      }
-      if (newSettings.maxColsToShow) {
-        window.sessionStorage.setItem('VITE_MAX_COLS_TO_SHOW', newSettings.maxColsToShow.toString());
-      }
-      
       return updatedSettings;
     });
   }, []);
@@ -57,8 +40,6 @@ const SettingsProvider = ({ children }: SettingsProviderProps) => {
     const defaultSettings = getDefaultSettings();
     setSettings(defaultSettings);
     localStorage.removeItem('dataview_settings');
-    window.sessionStorage.setItem('VITE_ROWS_PER_PAGE', defaultSettings.rowsPerPage.toString());
-    window.sessionStorage.setItem('VITE_MAX_COLS_TO_SHOW', defaultSettings.maxColsToShow.toString());
   }, []);
 
   return (

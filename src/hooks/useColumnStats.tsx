@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { DataFrame } from 'danfojs';
+import { DataFrame, Utils  } from 'danfojs';
 
 // Type definitions for our statistics return values
 export interface BaseStats {
@@ -31,8 +31,6 @@ export interface NumericStats extends BaseStats {
   median: number;
   std: number;
   var: number;
-  q1?: number;
-  q3?: number;
 }
 
 export interface BooleanStats extends BaseStats {
@@ -109,23 +107,7 @@ const useColumnStats = (dataFrame: DataFrame, selectedColumn: string | null): Co
       } catch (dtypeError) {
         // Fallback to manual type detection if needed
         console.warn("Error getting column dtype:", dtypeError);
-        const values = columnSeries.values;
-        
-        // Take only the first 50 non-null values for type detection to improve performance
-        const sampleSize = 50;
-        const sampleValues = values
-          .filter((val: unknown) => val !== null && val !== undefined)
-          .slice(0, sampleSize);
-        
-        // Manual type detection if $getColumnDtype fails - check just the sample
-        const numericValues = sampleValues.filter((val: unknown) => !isNaN(Number(val)));
-        const isNumeric = numericValues.length > 0 && numericValues.length === sampleValues.length;
-        
-        const boolValues = sampleValues.filter((val: unknown) => 
-          val === true || val === false || val === 'true' || val === 'false' || val === 1 || val === 0);
-        const isBoolean = boolValues.length > 0 && boolValues.length === sampleValues.length;
-        
-        dataType = isNumeric ? 'float32' : (isBoolean ? 'boolean' : 'string');
+        dataType = new Utils().inferDtype(columnSeries.values)[0];
       }
       
       // Get count - works for all column types
@@ -140,17 +122,18 @@ const useColumnStats = (dataFrame: DataFrame, selectedColumn: string | null): Co
       }, 0);
       
       // Get unique values count - useful for all data types
-      const uniqueCount = safelyExecute(() => columnSeries.nunique(), 0);
+      
       
       // Initialize frequency variables
       let frequencies: [string, number][] = [];
       let mode = { value: "N/A", frequency: 0 };
-      
+      let uniqueCount = 0
       // Get frequency counts - only needed for categorical and boolean data
       if (!isNumericType(dataType)) {
         try {
           // Use direct valueCounts() on the column for more efficient frequency counting
           const valuesCounts = columnSeries.valueCounts();
+          uniqueCount = safelyExecute(() => columnSeries.nUnique(), 0);;
           if (valuesCounts && valuesCounts.index && valuesCounts.values) {
             // Convert to array of [value, count] pairs
             frequencies = valuesCounts.index.map((value: string| number, idx: number) => {
@@ -178,25 +161,6 @@ const useColumnStats = (dataFrame: DataFrame, selectedColumn: string | null): Co
         const std = safelyExecute(() => columnSeries.std(), 0);
         const variance = safelyExecute(() => columnSeries.var(), 0);
         
-        // Calculate quartiles (if possible)
-        let q1, q3;
-        try {
-          // Some danfojs versions support quantile or describe
-          if (typeof columnSeries.quantile === 'function') {
-            q1 = columnSeries.quantile(0.25);
-            q3 = columnSeries.quantile(0.75);
-          } else if (typeof dataFrame.describe === 'function') {
-            const desc = dataFrame.describe();
-            const q1Idx = desc.index.indexOf('25%');
-            const q3Idx = desc.index.indexOf('75%');
-            if (q1Idx !== -1 && q3Idx !== -1) {
-              q1 = desc.iloc({ rows: [q1Idx] }).values[0][selectedColumn];
-              q3 = desc.iloc({ rows: [q3Idx] }).values[0][selectedColumn];
-            }
-          }
-        } catch (quartileError) {
-          console.warn("Error calculating quartiles:", quartileError);
-        }
         
         return {
           count,
@@ -211,8 +175,6 @@ const useColumnStats = (dataFrame: DataFrame, selectedColumn: string | null): Co
           median,
           std,
           var: variance,
-          q1,
-          q3,
           error: false
         };
       } 

@@ -1,4 +1,4 @@
-import { FunctionComponent, ReactElement, ChangeEvent, useCallback, useRef, useReducer, useEffect, useState } from 'react';
+import { FunctionComponent, ReactElement, ChangeEvent, useCallback, useRef, useReducer, useState, useEffect } from 'react';
 import { FiRefreshCw, FiSettings } from 'react-icons/fi';
 import { Button } from './Button';
 import { DataFrame } from "danfojs";
@@ -11,46 +11,23 @@ import { dataLoaderReducer, init_state, ActionType } from '../reducers/dataLoade
 
 const DataLoader: FunctionComponent = (): ReactElement => {
   const file_browser_ref = useRef<HTMLInputElement>(null);
-  const { dataFrame, setDataFrame } = useData();
+  const { setDataFrame } = useData();
   const [state, dispatch] = useReducer(dataLoaderReducer, init_state);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
-  // Validate dataFrame and set error if invalid - but only after a loading attempt
-  useEffect(() => {
-    if (state.is_restbtn_visible && dataFrame && (!dataFrame.shape || dataFrame.shape[0] === 0)) {
-      dispatch({ type: ActionType.SET_ERROR, payload: { error: 'No data available or empty dataset' } });
-    } else if (state.error) {
-      dispatch({ type: ActionType.CLEAR_ERROR });
-    }
-  }, [dataFrame, state.is_restbtn_visible, state.error]);
+  const [showResetButton, setShowResetButton] = useState(false);
   
-  // URL validation function
-  const validateUrl = (url: string): { valid: boolean; message: string } => {
-    // Check if URL is empty
-    if (url.trim() === '') {
-      return { valid: false, message: 'No URL provided' };
+  // Always keep the button in the DOM, just control its visibility
+  useEffect(() => {
+    if (state.is_restbtn_visible) {
+      // Delay the transition to make it smooth
+      const timer = setTimeout(() => {
+        setShowResetButton(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      setShowResetButton(false);
     }
-
-    try {
-      // Try to create a URL object to validate format
-      const urlObj = new URL(url);
-      
-      // Check protocol - only http/https allowed
-      if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
-        return { valid: false, message: 'URL must use http or https protocol' };
-      }
-      
-      // Check file extension for CSV
-      if (!url.toLowerCase().endsWith('.csv')) {
-        return { valid: false, message: 'URL must point to a CSV file' };
-      }
-      
-      return { valid: true, message: '' };
-    } catch (e: unknown) {
-      console.error(e);
-      return { valid: false, message: 'Invalid URL format' };
-    }
-  };
+  }, [state.is_restbtn_visible]);
 
   const resetOperation = useCallback(() => {
     dispatch({ type: ActionType.RESET_LOADER });
@@ -78,20 +55,12 @@ const DataLoader: FunctionComponent = (): ReactElement => {
     dispatch({ type: ActionType.SET_FILE_URL, payload: { file_url: e.target.value } });
   }, []);
 
-  const onFileChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      dispatch({ type: ActionType.SET_FILE_OBJECT, payload: { file_object: e.target.files[0] } });
-    }
-  }, []);
+  // Function to handle file selection
+ /*  const handleFileChange = useCallback((file: File | null) => {
+    dispatch({ type: ActionType.SET_FILE_OBJECT, payload: { file_object: file } });
+  }, []); */
 
-  // Function to process CSV data - separated for clarity and reuse
-  const processDataFrame = useCallback((df: DataFrame) => {
-    console.log(`DataFrame Shape [${df.shape}] `);
-    setDataFrame(df);
-    dispatch({ type: ActionType.SET_RESET_BTN_VISIBLE });
-  }, [setDataFrame]);
-
-  // Separated error handling for better maintainability
+  // Separated error handling
   const handleError = useCallback((error: unknown) => {
     if (error instanceof Error) {
       console.error(error.message);
@@ -103,52 +72,16 @@ const DataLoader: FunctionComponent = (): ReactElement => {
     dispatch({ type: ActionType.SET_RESET_BTN_VISIBLE });
   }, []);
 
-  const onFileUpload = useCallback(async () => {
-    // Validate file exists before proceeding
-    if (!state.file_object) {
-      dispatch({ type: ActionType.SET_ERROR, payload: { error: 'No file selected' } });
-      return;
-    }
-    
-    try {
-      console.log(`File Name ${state.file_object.name}`);
-      dispatch({ type: ActionType.URL_LOAD_INIT });
-      
-      const fileUrl = URL.createObjectURL(state.file_object);
-      
-      // Using dynamic import for readCSV
-      const danfojs = await import('danfojs');
-      danfojs.readCSV(fileUrl)
-        .then(processDataFrame)
-        .catch(handleError);
-    } catch (error: unknown) {
-      handleError(error);
-    }
-  }, [state.file_object, processDataFrame, handleError]);
-
-  const onFileDownload = useCallback(async () => {
-    // Validate URL before proceeding
-    const validationResult = validateUrl(state.file_url);
-    if (!validationResult.valid) {
-      console.error(validationResult.message);
-      dispatch({ type: ActionType.SET_ERROR, payload: { error: validationResult.message } });
-      return;
-    }
-    
+  // Set loading state 
+  const handleLoadingState = useCallback(() => {
     dispatch({ type: ActionType.URL_LOAD_INIT });
-    
-    try {
-      console.log(`File URL ${state.file_url}`);
-      
-      // Using dynamic import for readCSV with destructuring for better tree-shaking
-      const { readCSV } = await import('danfojs');
-      readCSV(state.file_url)
-        .then(processDataFrame)
-        .catch(handleError);
-    } catch (error: unknown) {
-      handleError(error);
-    }
-  }, [state.file_url, processDataFrame, handleError]);
+  }, []);
+
+  // Function to handle successful data processing
+  const handleProcessSuccess = useCallback(() => {
+    // Set the reset button to be visible
+    dispatch({ type: ActionType.SET_RESET_BTN_VISIBLE });
+  }, []);
 
   // Handlers for settings dialog
   const handleOpenSettings = useCallback(() => {
@@ -192,10 +125,10 @@ const DataLoader: FunctionComponent = (): ReactElement => {
       <div className="w-full">
         {state.file_load_scheme ? (
           <FileBrowser
-            file={state.file_object}
             disabled={state.is_inputs_disabled}
-            onChange={onFileChange}
-            onUpload={onFileUpload}
+            onError={handleError}
+            onSuccess={handleProcessSuccess}
+            loadingState={handleLoadingState}
             ref={file_browser_ref}
           />
         ) : (
@@ -203,7 +136,9 @@ const DataLoader: FunctionComponent = (): ReactElement => {
             fileurl={state.file_url}
             disabled={state.is_inputs_disabled}
             onChange={onUrlChange}
-            onSubmit={onFileDownload}
+            onError={handleError}
+            onSuccess={handleProcessSuccess}
+            loadingState={handleLoadingState}
           />
         )}
       </div>
@@ -212,16 +147,16 @@ const DataLoader: FunctionComponent = (): ReactElement => {
         <div className={`flex justify-center items-center px-3 py-1 font-mono text-xs ${state.error ? 'text-red-500 bg-red-50 dark:bg-red-900/20 rounded-md' : 'text-transparent'}`}>
           {state.error || 'No errors'}
         </div>
-        {state.is_restbtn_visible && (
-          <Button
-            variant="secondary"
-            size="small"
-            onClick={resetOperation}
-            className="hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-all duration-300"
-          >
-            <FiRefreshCw className="text-sm animate-pulse" /> Reset
-          </Button>
-        )}
+        
+        {/* Always render the button but control visibility with CSS */}
+        <Button
+          variant="secondary"
+          size="small"
+          onClick={resetOperation}
+          className={`whitespace-nowrap min-w-24 h-9 rounded-lg shadow-sm hover:shadow px-4 font-medium hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-all duration-500 ease-in-out ${showResetButton ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        >
+          <FiRefreshCw className="text-sm animate-pulse" /> Reset
+        </Button>
       </div>
       
       {/* Settings Dialog */}

@@ -34,16 +34,6 @@ const useDataStats = (dataFrame: DataFrame | null): DataStats => {
     };
 
     // DEBUG: Log dataFrame properties to help diagnose issues
-    console.log("DataStats Debug:", { 
-      hasDataFrame: !!dataFrame,
-      hasShape: dataFrame ? !!dataFrame.shape : false,
-      isShapeArray: dataFrame && dataFrame.shape ? Array.isArray(dataFrame.shape) : false,
-      rows: dataFrame && dataFrame.shape ? dataFrame.shape[0] : 'none',
-      cols: dataFrame && dataFrame.shape ? dataFrame.shape[1] : 'none',
-      hasColumns: dataFrame ? !!dataFrame.columns : false,
-      isColumnsArray: dataFrame && dataFrame.columns ? Array.isArray(dataFrame.columns) : false,
-      columnCount: dataFrame && dataFrame.columns ? dataFrame.columns.length : 'none'
-    });
 
     // More robust check for valid dataFrame with data
     if (!dataFrame) {

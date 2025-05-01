@@ -7,6 +7,7 @@ interface ImportMetaEnv {
   readonly VITE_GIT_REPO: string;
   readonly VITE_ROWS_PER_PAGE: string;
   readonly VITE_MAX_COLS_TO_SHOW: string;
+  readonly VITE_COLUMNS_WIDTH: string;
   // more env variables...
 }
 

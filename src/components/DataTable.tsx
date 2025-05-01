@@ -4,12 +4,6 @@ import { useSettings } from '../hooks/useSettings';
 import { Button } from './Button';
 import { FiDownload } from 'react-icons/fi';
 
-// Define interfaces for row data
-interface DataRow {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any; // This allows indexing with strings
-}
-
 // Column width settings
 const DEFAULT_COLUMN_WIDTH = 150; // Default width for each column in pixels
 
@@ -37,17 +31,9 @@ const DataTable: FunctionComponent = (): ReactElement => {
     if (!dataFrame || !dataFrame.shape || dataFrame.shape[0] === 0) {
       return [];
     }
+    return dataFrame.iloc({rows: [`${startIdx}:${endIdx}`]}).values as Array<Array<unknown>>;
     
-    const pageRows = [];
-    for (let i = startIdx; i < endIdx; i++) {
-      const row: DataRow = {};
-      columns.forEach((col: string) => {
-        row[col] = dataFrame.at(i, col);
-      });
-      pageRows.push(row);
-    }
-    return pageRows;
-  }, [dataFrame, columns, startIdx, endIdx]);
+  }, [dataFrame,startIdx, endIdx]);
   
   // Memoize pagination handler functions
   const handlePrevPage = useCallback(() => {
@@ -156,7 +142,7 @@ const DataTable: FunctionComponent = (): ReactElement => {
             </thead>
             <tbody>
               {rows.length > 0 ? (
-                rows.map((row: any, rowIndex: number) => (
+                rows.map((row: Array<unknown>, rowIndex: number) => (
                   <tr 
                     key={rowIndex} 
                     className="hover:bg-zinc-50 dark:hover:bg-zinc-800"
@@ -172,9 +158,9 @@ const DataTable: FunctionComponent = (): ReactElement => {
                       >
                         <div 
                           className="tooltip tooltip-top w-full overflow-hidden text-ellipsis" 
-                          data-tooltip={String(row[column] ?? '')}
+                          data-tooltip={String(row[colIndex] ?? '')}
                         >
-                          {String(row[column] ?? '')}
+                          {String(row[colIndex] ?? '')}
                         </div>
                       </td>
                     ))}
