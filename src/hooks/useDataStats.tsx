@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { DataFrame } from 'danfojs';
+import { duplicated } from '../utility/Dfutility';
 
 interface DataStats {
   totalRows: number;
@@ -72,17 +73,26 @@ const useDataStats = (dataFrame: DataFrame | null): DataStats => {
       // Calculate total rows and columns
       const [rows, cols] = dataFrame.shape;
       
-      // Calculate duplicate rows
+      // Calculate duplicate rows using our custom function
       let duplicateRows = 0;
       try {
-        // Create a duplicate count using the DataFrame's duplicated method if available
-        const duplicated = dataFrame.duplicated();
-        duplicateRows = duplicated.sum();
+        const duplicatedSeries = duplicated(dataFrame);
+        duplicateRows = duplicatedSeries.values.filter(Boolean).length;
       } catch (error) {
         console.warn('Error calculating duplicate rows:', error);
-        // Fallback method if duplicated() is not available
-        const uniqueRows = dataFrame.dropDuplicates().shape[0];
-        duplicateRows = rows - uniqueRows;
+        // Fallback method if duplicated() still fails
+        try {
+          // Simple hash-based approach as fallback
+          const uniqueRows = new Set();
+          for (let i = 0; i < rows; i++) {
+            const rowValues = dataFrame.values[i];
+            uniqueRows.add(JSON.stringify(rowValues));
+          }
+          duplicateRows = rows - uniqueRows.size;
+        } catch (fallbackError) {
+          console.warn('Error in fallback duplicate calculation:', fallbackError);
+          duplicateRows = 0;
+        }
       }
       
       // Calculate duplicate percentage
@@ -93,14 +103,14 @@ const useDataStats = (dataFrame: DataFrame | null): DataStats => {
         let nullCount = 0;
         try {
           // Count nulls in the column
-          nullCount = dataFrame.column(column).isNa().sum();
+          nullCount = dataFrame.column(column).isNa().values.filter(Boolean).length;
         } catch (error) {
           console.warn(`Error counting nulls in column ${column}:`, error);
         }
         
         return {
           name: column,
-          dtype: dataFrame.dtypes[column] || 'unknown',
+          dtype: dataFrame[column].dtype,
           nullCount,
           nullPercentage: rows > 0 ? (nullCount / rows) * 100 : 0
         };

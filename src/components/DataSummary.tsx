@@ -1,11 +1,28 @@
-import { FunctionComponent, ReactElement } from 'react';
+import { FunctionComponent, ReactElement, useMemo } from 'react';
 import { useData } from '../hooks/useData';
 import useDataStats from '../hooks/useDataStats';
-import { FiDatabase, FiGrid, FiCopy, FiInfo } from 'react-icons/fi';
 
 const DataSummary: FunctionComponent = (): ReactElement => {
   const { dataFrame } = useData();
   const stats = useDataStats(dataFrame);
+
+  // Calculate total null percentage
+  const totalNullStats = useMemo(() => {
+    if (stats.isEmpty) return { totalNullCount: 0, totalNullPercentage: 0 };
+    
+    // Sum up all null counts from all columns
+    const totalNullCount = stats.columnsInfo.reduce((sum, col) => sum + col.nullCount, 0);
+    
+    // Calculate total data points (rows × columns)
+    const totalDataPoints = stats.totalRows * stats.totalColumns;
+    
+    // Calculate percentage
+    const totalNullPercentage = totalDataPoints > 0 
+      ? (totalNullCount / totalDataPoints) * 100 
+      : 0;
+      
+    return { totalNullCount, totalNullPercentage };
+  }, [stats]);
 
   return (
     <div className="w-full p-5 rounded-md bg-white dark:bg-zinc-900 shadow-md mb-6">
@@ -16,99 +33,92 @@ const DataSummary: FunctionComponent = (): ReactElement => {
           No data loaded. Please load a CSV file to view statistics.
         </div>
       ) : (
-        <div className="space-y-6">
-          {/* Main summary metrics */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-zinc-50 dark:bg-zinc-800 p-4 rounded-md flex flex-col">
-              <div className="flex items-center text-zinc-600 dark:text-zinc-300 mb-2">
-                <FiDatabase className="mr-2" />
-                <span className="text-sm font-medium">Total Rows</span>
-              </div>
-              <div className="font-mono text-lg font-bold">{stats.totalRows.toLocaleString()}</div>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Left side - Summary metrics in a single card */}
+          <div className="bg-zinc-50 dark:bg-zinc-800 p-5 rounded-md flex flex-col">
+            <h3 className="text-lg font-['Montserrat'] font-medium mb-4">Summary Metrics</h3>
             
-            <div className="bg-zinc-50 dark:bg-zinc-800 p-4 rounded-md flex flex-col">
-              <div className="flex items-center text-zinc-600 dark:text-zinc-300 mb-2">
-                <FiGrid className="mr-2" />
-                <span className="text-sm font-medium">Total Columns</span>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="space-y-2 font-mono text-sm text-zinc-600 dark:text-zinc-300">Total Rows:</span>
+                <span className="font-mono text-sm">{stats.totalRows.toLocaleString()}</span>
               </div>
-              <div className="font-mono text-lg font-bold">{stats.totalColumns.toLocaleString()}</div>
-            </div>
-            
-            <div className="bg-zinc-50 dark:bg-zinc-800 p-4 rounded-md flex flex-col">
-              <div className="flex items-center text-zinc-600 dark:text-zinc-300 mb-2">
-                <FiCopy className="mr-2" />
-                <span className="text-sm font-medium">Duplicate Rows</span>
+              
+              <div className="flex justify-between items-center">
+                <span className="space-y-2 font-mono text-sm text-zinc-600 dark:text-zinc-300">Total Columns:</span>
+                <span className="font-mono text-sm">{stats.totalColumns.toLocaleString()}</span>
               </div>
-              <div className="font-mono text-lg font-bold">
-                {stats.duplicateRows.toLocaleString()} 
-                <span className="text-xs ml-1 text-zinc-500 dark:text-zinc-400">
-                  ({stats.duplicatePercentage.toFixed(2)}%)
+              
+              <div className="flex justify-between items-center">
+                <span className="space-y-2 font-mono text-sm text-zinc-600 dark:text-zinc-300">Duplicate Rows:</span>
+                <span className="font-mono text-sm">
+                  {stats.duplicateRows.toLocaleString()} 
+                  <span className="text-xs ml-1 text-zinc-500 dark:text-zinc-400">
+                    ({stats.duplicatePercentage.toFixed(2)}%)
+                  </span>
                 </span>
               </div>
-            </div>
-            
-            <div className="bg-zinc-50 dark:bg-zinc-800 p-4 rounded-md flex flex-col">
-              <div className="flex items-center text-zinc-600 dark:text-zinc-300 mb-2">
-                <FiInfo className="mr-2" />
-                <span className="text-sm font-medium">Data Quality</span>
+              
+              <div className="flex justify-between items-center">
+                <span className="space-y-2 font-mono text-sm text-zinc-600 dark:text-zinc-300">Total Null Values:</span>
+                <span className="font-mono text-sm">
+                  {totalNullStats.totalNullCount.toLocaleString()}
+                  <span className="text-xs ml-1 text-zinc-500 dark:text-zinc-400">
+                    ({totalNullStats.totalNullPercentage.toFixed(2)}%)
+                  </span>
+                </span>
               </div>
-              <div className="font-mono text-lg font-bold">
-                {(100 - stats.columnsInfo.reduce((acc, col) => acc + col.nullPercentage, 0) / stats.totalColumns).toFixed(2)}%
+              
+              <div className="flex justify-between items-center">
+                <span className="space-y-2 font-mono text-sm text-zinc-600 dark:text-zinc-300">Data Quality:</span>
+                <span className="font-mono text-sm">
+                  {(100 - stats.columnsInfo.reduce((acc, col) => acc + col.nullPercentage, 0) / stats.totalColumns).toFixed(2)}%
+                </span>
               </div>
             </div>
           </div>
           
-          {/* Column data types and null counts */}
-          <div className="overflow-x-auto">
+          {/* Right side - Column information with fixed height and scrollbar */}
+          <div className="bg-zinc-50 dark:bg-zinc-800 p-5 rounded-md flex flex-col">
             <h3 className="text-lg font-['Montserrat'] font-medium mb-3">Column Information</h3>
-            <table className="min-w-full border-collapse">
-              <thead>
-                <tr className="bg-zinc-100 dark:bg-zinc-800">
-                  <th className="px-4 py-2 text-left text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300 border-b border-zinc-200 dark:border-zinc-700">
-                    Column Name
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300 border-b border-zinc-200 dark:border-zinc-700">
-                    Data Type
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300 border-b border-zinc-200 dark:border-zinc-700">
-                    Null Count
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300 border-b border-zinc-200 dark:border-zinc-700">
-                    Null %
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {stats.columnsInfo.map((col, index) => (
-                  <tr 
-                    key={index} 
-                    className="hover:bg-zinc-50 dark:hover:bg-zinc-800"
-                  >
-                    <td className="px-4 py-2 text-xs font-mono border-b border-zinc-100 dark:border-zinc-800">
-                      {col.name}
-                    </td>
-                    <td className="px-4 py-2 text-xs font-mono border-b border-zinc-100 dark:border-zinc-800">
-                      <span className="px-2 py-1 rounded-md bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300">
-                        {col.dtype}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2 text-xs font-mono border-b border-zinc-100 dark:border-zinc-800">
-                      {col.nullCount.toLocaleString()}
-                    </td>
-                    <td className="px-4 py-2 text-xs font-mono border-b border-zinc-100 dark:border-zinc-800">
-                      {col.nullPercentage.toFixed(2)}%
-                      <div className="w-full bg-zinc-200 dark:bg-zinc-700 h-1 mt-1 rounded-full overflow-hidden">
-                        <div 
-                          className="bg-blue-500 h-full rounded-full"
-                          style={{ width: `${col.nullPercentage}%` }}
-                        ></div>
-                      </div>
-                    </td>
+            
+            <div className="overflow-y-auto h-48 custom-scrollbar">
+              <table className="min-w-full border-collapse">
+                <thead className="sticky top-0 z-10">
+                  <tr className="bg-zinc-100 dark:bg-zinc-800">
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-zinc-700 dark:text-zinc-300 border-b border-zinc-200 dark:border-zinc-700">
+                      Column Name
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-zinc-700 dark:text-zinc-300 border-b border-zinc-200 dark:border-zinc-700">
+                      Data Type
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-zinc-700 dark:text-zinc-300 border-b border-zinc-200 dark:border-zinc-700">
+                      Null Count
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {stats.columnsInfo.map((col, index) => (
+                    <tr 
+                      key={index} 
+                      className="hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                    >
+                      <td className="px-4 py-2 text-xs font-mono border-b border-zinc-100 dark:border-zinc-800">
+                        {col.name}
+                      </td>
+                      <td className="px-4 py-2 text-xs font-mono border-b border-zinc-100 dark:border-zinc-800">
+                        <span className="px-2 py-1 rounded-md bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300">
+                          {col.dtype}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2 text-xs font-mono border-b border-zinc-100 dark:border-zinc-800">
+                        {col.nullCount.toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}

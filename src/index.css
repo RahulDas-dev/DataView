@@ -61,6 +61,39 @@
   scrollbar-color: #52525b #27272a; /* zinc-600 zinc-800 */
 }
 
+/* Custom scrollbar styles for better visibility */
+.custom-scrollbar::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Dark theme scrollbar */
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
 @layer components {
   .container {
     @apply w-full mx-auto max-w-[1400px] px-4 sm:px-6 md:px-8 lg:px-16 xl:px-32;
@@ -129,56 +162,5 @@
 
   .btn-normal {
     @apply w-full px-4 py-2;
-  }
-
-  /* Tooltip Styles */
-  .tooltip {
-    @apply relative inline-block;
-  }
-
-  .tooltip:before {
-    @apply content-[attr(data-tooltip)] absolute z-10 px-2 py-1 text-xs font-medium text-white bg-zinc-800 dark:bg-zinc-700 rounded shadow-sm opacity-0 invisible transition-opacity duration-200;
-  }
-
-  .tooltip:after {
-    @apply content-[''] absolute border-[5px] border-solid opacity-0 invisible transition-opacity duration-200;
-  }
-
-  .tooltip:hover:before,
-  .tooltip:hover:after {
-    @apply opacity-100 visible;
-  }
-
-  /* Tooltip positions */
-  .tooltip-top:before {
-    @apply bottom-[calc(100%+5px)] left-1/2 -translate-x-1/2;
-  }
-
-  .tooltip-top:after {
-    @apply bottom-full left-1/2 -translate-x-1/2 border-t-zinc-800 dark:border-t-zinc-700 border-r-transparent border-l-transparent border-b-transparent;
-  }
-
-  .tooltip-bottom:before {
-    @apply top-[calc(100%+5px)] left-1/2 -translate-x-1/2;
-  }
-
-  .tooltip-bottom:after {
-    @apply top-full left-1/2 -translate-x-1/2 border-b-zinc-800 dark:border-b-zinc-700 border-r-transparent border-l-transparent border-t-transparent;
-  }
-
-  .tooltip-left:before {
-    @apply right-[calc(100%+5px)] top-1/2 -translate-y-1/2;
-  }
-
-  .tooltip-left:after {
-    @apply right-full top-1/2 -translate-y-1/2 border-l-zinc-800 dark:border-l-zinc-700 border-t-transparent border-b-transparent border-r-transparent;
-  }
-
-  .tooltip-right:before {
-    @apply left-[calc(100%+5px)] top-1/2 -translate-y-1/2;
-  }
-
-  .tooltip-right:after {
-    @apply left-full top-1/2 -translate-y-1/2 border-r-zinc-800 dark:border-r-zinc-700 border-t-transparent border-b-transparent border-l-transparent;
   }
 }

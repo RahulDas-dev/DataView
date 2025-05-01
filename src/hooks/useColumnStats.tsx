@@ -105,7 +105,7 @@ const useColumnStats = (dataFrame: DataFrame, selectedColumn: string | null): Co
       let dataType = 'Unknown';
       
       try {
-        dataType = dataFrame.$getColumnDtype(selectedColumn);
+        dataType = dataFrame[selectedColumn].dtype;
       } catch (dtypeError) {
         // Fallback to manual type detection if needed
         console.warn("Error getting column dtype:", dtypeError);

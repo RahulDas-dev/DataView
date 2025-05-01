@@ -31,6 +31,9 @@ export default tseslint.config({
 })
 ```
 
+
+
+
 You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
 ```js
@@ -60,3 +63,7 @@ https://raw.githubusercontent.com/javascriptdata/danfojs/dev/src/danfojs-node/te
 https://archive.ics.uci.edu/static/public/165/data.csv
 
 # git subtree push --prefix build origin gh-pages
+
+
+
+

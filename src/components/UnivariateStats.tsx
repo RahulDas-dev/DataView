@@ -3,10 +3,12 @@ import { useData } from '../hooks/useData';
 import useColumnStats, { NumericStats, BooleanStats, CategoricalStats } from '../hooks/useColumnStats';
 import { Button } from './Button';
 import { FiBarChart2, FiDownload } from 'react-icons/fi';
+import ChartModal from './charts/ChartModal';
 
 const UnivariateStats: FunctionComponent = (): ReactElement => {
   const { dataFrame } = useData();
   const [selectedColumn, setSelectedColumn] = useState<string | null>(null);
+  const [showChartModal, setShowChartModal] = useState(false);
   
   // Get column names - memoized
   const columns = useMemo(() => {
@@ -20,8 +22,19 @@ const UnivariateStats: FunctionComponent = (): ReactElement => {
     }
   }, [columns, selectedColumn]);
   
-  // Use our new hook for all statistics computations
+  // Use our hook for all statistics computations
   const stats = useColumnStats(dataFrame, selectedColumn);
+  
+  // Get column values for the chart
+  const columnValues = useMemo(() => {
+    if (!dataFrame || !selectedColumn) return [];
+    try {
+      return dataFrame[selectedColumn]?.values || [];
+    } catch (e) {
+      console.error("Error getting column values:", e);
+      return [];
+    }
+  }, [dataFrame, selectedColumn]);
   
   // Get top 10 frequencies for display
   const topFrequencies = useMemo(() => {
@@ -37,7 +50,12 @@ const UnivariateStats: FunctionComponent = (): ReactElement => {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-['Montserrat'] font-semibold">Univariate Statistics</h2>
         <div className="flex gap-2">
-          <Button variant="secondary" size="small">
+          <Button 
+            variant="secondary" 
+            size="small"
+            onClick={() => setShowChartModal(true)}
+            disabled={!stats || stats.error}
+          >
             <FiBarChart2 /> Chart
           </Button>
           <Button variant="secondary" size="small">
@@ -186,6 +204,17 @@ const UnivariateStats: FunctionComponent = (): ReactElement => {
         <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md">
           Unable to calculate statistics for this column. Please check the data format.
         </div>
+      )}
+      
+      {/* Chart Modal */}
+      {stats && !stats.error && (
+        <ChartModal 
+          isOpen={showChartModal}
+          onClose={() => setShowChartModal(false)}
+          stats={stats}
+          selectedColumn={selectedColumn}
+          dataValues={columnValues}
+        />
       )}
     </div>
   );

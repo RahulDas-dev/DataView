@@ -10,19 +10,14 @@ interface DataRow {
   [key: string]: any; // This allows indexing with strings
 }
 
+// Column width settings
+const DEFAULT_COLUMN_WIDTH = 150; // Default width for each column in pixels
+
 const DataTable: FunctionComponent = (): ReactElement => {
   const { dataFrame } = useData();
   const { settings } = useSettings();
   const [page, setPage] = useState(1);
   const csvLinkRef = useRef<HTMLAnchorElement>(null);
-  
-  // Move useMemo hook here, before any conditional returns
-  const needsHorizontalScroll = useMemo(() => 
-    dataFrame && dataFrame.columns ? 
-    dataFrame.columns.length > settings.maxColsToShow : 
-    false,
-    [dataFrame, settings.maxColsToShow]
-  );
   
   // Memoize column names
   const columns = useMemo(() => dataFrame?.columns || [], [dataFrame]);
@@ -112,6 +107,15 @@ const DataTable: FunctionComponent = (): ReactElement => {
     }
   }, [dataFrame, columns]);
   
+  // Calculate column widths
+  const columnWidths = useMemo(() => {
+    // Create a fixed width for all columns
+    return columns.reduce((acc, column) => {
+      acc[column] = DEFAULT_COLUMN_WIDTH;
+      return acc;
+    }, {} as Record<string, number>);
+  }, [columns]);
+  
   return (
     <div className="w-full p-5 rounded-md bg-white dark:bg-zinc-900 shadow-md mb-6">
       <div className="flex justify-between items-center mb-4">
@@ -124,49 +128,71 @@ const DataTable: FunctionComponent = (): ReactElement => {
         </div>
       </div>
       
-      <div className={`${needsHorizontalScroll ? 'overflow-x-auto custom-scrollbar' : ''}`}>
-        <table className={`min-w-full border-collapse ${needsHorizontalScroll ? 'table-fixed' : ''}`}>
-          <thead>
-            <tr className="bg-zinc-100 dark:bg-zinc-800">
-              {columns.map((column: string, index: number) => (
-                <th 
-                  key={index} 
-                  className="px-4 py-2 text-left text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300 border-b border-zinc-200 dark:border-zinc-700"
-                >
-                  {column}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length > 0 ? (
-              rows.map((row: any, rowIndex: number) => (
-                <tr 
-                  key={rowIndex} 
-                  className="hover:bg-zinc-50 dark:hover:bg-zinc-800"
-                >
-                  {columns.map((column: string, colIndex: number) => (
-                    <td 
-                      key={colIndex} 
-                      className="px-4 py-2 text-xs font-mono border-b border-zinc-100 dark:border-zinc-800 whitespace-nowrap"
-                    >
-                      {row[column]?.toString()}
-                    </td>
-                  ))}
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td 
-                  colSpan={columns.length || 1} 
-                  className="px-4 py-6 text-center text-sm font-mono text-zinc-500 dark:text-zinc-400"
-                >
-                  No data available.
-                </td>
+      {/* Table container with fixed column widths */}
+      <div className="relative">
+        <div className="overflow-x-auto custom-scrollbar" style={{ 
+          maxWidth: '100%', 
+          overflowY: 'hidden',
+          position: 'relative'
+        }}>
+          <table className="border-collapse table-fixed" style={{ width: `${Object.keys(columnWidths).length * DEFAULT_COLUMN_WIDTH}px` }}>
+            <thead>
+              <tr className="bg-zinc-100 dark:bg-zinc-800">
+                {columns.map((column: string, index: number) => (
+                  <th 
+                    key={index} 
+                    className="px-4 py-2 text-left text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300 border-b border-zinc-200 dark:border-zinc-700 whitespace-nowrap overflow-hidden text-ellipsis"
+                    style={{ 
+                      width: `${columnWidths[column]}px`,
+                      maxWidth: `${columnWidths[column]}px`
+                    }}
+                  >
+                    <div className="tooltip tooltip-top w-full h-full" data-tooltip={column}>
+                      {column}
+                    </div>
+                  </th>
+                ))}
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.length > 0 ? (
+                rows.map((row: any, rowIndex: number) => (
+                  <tr 
+                    key={rowIndex} 
+                    className="hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                  >
+                    {columns.map((column: string, colIndex: number) => (
+                      <td 
+                        key={colIndex} 
+                        className="px-4 py-2 text-xs font-mono border-b border-zinc-100 dark:border-zinc-800 whitespace-nowrap overflow-hidden text-ellipsis"
+                        style={{ 
+                          width: `${columnWidths[column]}px`,
+                          maxWidth: `${columnWidths[column]}px`
+                        }}
+                      >
+                        <div 
+                          className="tooltip tooltip-top w-full overflow-hidden text-ellipsis" 
+                          data-tooltip={String(row[column] ?? '')}
+                        >
+                          {String(row[column] ?? '')}
+                        </div>
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td 
+                    colSpan={columns.length || 1} 
+                    className="px-4 py-6 text-center text-sm font-mono text-zinc-500 dark:text-zinc-400"
+                  >
+                    No data available.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
       
       {totalRows > 0 && totalPages > 1 && (

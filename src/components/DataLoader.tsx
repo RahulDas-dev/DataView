@@ -104,9 +104,13 @@ const DataLoader: FunctionComponent = (): ReactElement => {
   }, []);
 
   const onFileUpload = useCallback(async () => {
+    // Validate file exists before proceeding
+    if (!state.file_object) {
+      dispatch({ type: ActionType.SET_ERROR, payload: { error: 'No file selected' } });
+      return;
+    }
+    
     try {
-      if (!state.file_object) return;
-      
       console.log(`File Name ${state.file_object.name}`);
       dispatch({ type: ActionType.URL_LOAD_INIT });
       
