@@ -84,7 +84,7 @@ const UnivariateStats: FunctionComponent = (): ReactElement => {
       
       {stats && !stats.error && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-zinc-50 dark:bg-zinc-800 p-4 rounded-md">
+          <div className="bg-zinc-50 dark:bg-zinc-800 p-4 rounded-md h-64 overflow-y-auto custom-scrollbar">
             <h3 className="text-lg font-['Montserrat'] font-medium mb-3">Basic Information</h3>
             <ul className="space-y-2 font-mono text-sm">
               <li className="flex justify-between">
@@ -126,7 +126,7 @@ const UnivariateStats: FunctionComponent = (): ReactElement => {
             {(stats.categorical || stats.boolean) && (
               <>
                 <h3 className="text-lg font-['Montserrat'] font-medium mb-3">Frequency Distribution</h3>
-                <div className="h-[calc(100%-2.5rem)] overflow-y-auto custom-scrollbar">
+                <div className="h-48 overflow-y-auto custom-scrollbar">
                   <table className="min-w-full border-collapse">
                     <thead>
                       <tr className="bg-zinc-100 dark:bg-zinc-700">

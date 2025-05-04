@@ -14,11 +14,16 @@ const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     setDataFrameState(df);
   }, []);
 
+  const resetDataFrame = useCallback(() => {
+    setDataFrameState(new DataFrame());
+  }, []);
+
   // Memoize the context value to prevent unnecessary re-renders in consuming components
   const contextValue = useMemo(() => ({
     dataFrame,
-    setDataFrame
-  }), [dataFrame, setDataFrame]);
+    setDataFrame,
+    resetDataFrame
+  }), [dataFrame, setDataFrame, resetDataFrame]);
 
   return (
     <DataContext.Provider value={contextValue}>

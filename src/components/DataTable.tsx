@@ -3,28 +3,32 @@ import { useData } from '../hooks/useData';
 import { useSettings } from '../hooks/useSettings';
 import { Button } from './Button';
 import { FiDownload } from 'react-icons/fi';
+import { AiOutlineEdit } from 'react-icons/ai';
+import RenameColumnsDialog from './ReanmeColumnDialog';
+import { ColumnDtype, inferDataTypes } from '../utility/Dfutility';
 
-// Column width settings
-const DEFAULT_COLUMN_WIDTH = 150; // Default width for each column in pixels
 
 const DataTable: FunctionComponent = (): ReactElement => {
-  const { dataFrame } = useData();
+  const { dataFrame, setDataFrame } = useData();
   const { settings } = useSettings();
   const [page, setPage] = useState(1);
+  const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
+  const [columnDataTypes, setColumnDataTypes] = useState<Record<string, ColumnDtype>>({});
   const csvLinkRef = useRef<HTMLAnchorElement>(null);
-  
+  const [dfUpdateerror, setdfUpdateerror] = useState<string | null>(null);
+  const { rowsPerPage, columnsWidth } = settings;
   // Memoize column names
   const columns = useMemo(() => dataFrame?.columns || [], [dataFrame]);
   
   // Memoize pagination data
   const { totalRows, totalPages, startIdx, endIdx } = useMemo(() => {
     const totalRows = dataFrame && dataFrame.shape ? dataFrame.shape[0] : 0;
-    const totalPages = Math.ceil(totalRows / settings.rowsPerPage) || 1;
-    const startIdx = (page - 1) * settings.rowsPerPage;
-    const endIdx = Math.min(startIdx + settings.rowsPerPage, totalRows);
+    const totalPages = Math.ceil(totalRows / rowsPerPage) || 1;
+    const startIdx = (page - 1) * rowsPerPage;
+    const endIdx = Math.min(startIdx + rowsPerPage, totalRows);
     
     return { totalRows, totalPages, startIdx, endIdx };
-  }, [dataFrame, page, settings.rowsPerPage]);
+  }, [dataFrame, page, rowsPerPage]);
   
   // Memoize rows for current page to avoid recalculation on every render
   const rows = useMemo(() => {
@@ -47,15 +51,13 @@ const DataTable: FunctionComponent = (): ReactElement => {
   // Export to CSV
   const handleExport = useCallback(() => {
     if (!dataFrame || !dataFrame.shape || dataFrame.shape[0] === 0) {
-      alert("No data available to export");
+      console.error("No data available to export");
       return;
     }
-    
     try {
       // Create CSV content
       const headers = columns.join(',');
       const rows = [];
-      
       // Use dataFrame for all data
       for (let i = 0; i < dataFrame.shape[0]; i++) {
         const rowData = [];
@@ -70,13 +72,10 @@ const DataTable: FunctionComponent = (): ReactElement => {
         }
         rows.push(rowData.join(','));
       }
-      
       const csvContent = [headers, ...rows].join('\n');
-      
       // Create download link
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
-      
       if (csvLinkRef.current) {
         csvLinkRef.current.href = url;
         csvLinkRef.current.download = 'data_export.csv';
@@ -89,27 +88,108 @@ const DataTable: FunctionComponent = (): ReactElement => {
       }
     } catch (error) {
       console.error("Error exporting data:", error);
-      alert("There was an error exporting the data.");
     }
   }, [dataFrame, columns]);
+
+  const handleOpenRenameDialog = useCallback(() => {
+    if (!dataFrame || dataFrame.isEmpty || dataFrame.shape[0] === 0) {
+      console.error("No data available to rename columns");
+      return;
+    }
+    // Infer data types if not already set
+    const inferred = inferDataTypes(dataFrame);
+    setColumnDataTypes(inferred);
+    setIsRenameDialogOpen(true);
+  }, [dataFrame, setColumnDataTypes]);
+  
+  const handleSaveRenamedColumns = (renamedColumns: Record<string, string>, newDataTypes: Record<string, ColumnDtype>) => {
+    if (!dataFrame) return;
+    let updatedDF = dataFrame;
+    let isDataFrameUpdated = false;
+    
+    console.log('Renamed Columns:', renamedColumns);
+    console.log('New Data Types:', newDataTypes);
+    try {      
+      // Apply column renaming
+      if (Object.keys(renamedColumns).length > 0) {
+        const hasActualChanges = Object.entries(renamedColumns).some(
+          ([oldName, newName]) => oldName !== newName
+        );
+        if (hasActualChanges) {
+          updatedDF = updatedDF.rename(renamedColumns);
+          console.log("Columns renamed successfully");
+          isDataFrameUpdated = true;
+        } 
+      }
+      
+      // Save the updated data types
+      setColumnDataTypes(newDataTypes);
+      
+      // Apply type conversions (this would depend on your DataFrame library's capabilities)
+      // This is a simplified example - you may need to adjust based on your actual implementation
+      Object.entries(newDataTypes).forEach(([column, type]) => {
+        if (!dataFrame.columns.includes(column)) {
+          console.log(`Column ${column} not found in DataFrame, skipping type conversion`);
+          return; // Using 'return' in forEach acts like 'continue' in a loop
+        }
+        if (!['float32', 'int32', 'boolean', 'string'].includes(type)) {
+          console.log(`Type ${type} not supported for column ${column}, skipping`);
+          return;
+        }
+        const targetColumn = renamedColumns[column] || column;
+        let currentType: string;
+        try {
+          currentType = updatedDF[targetColumn].dtype;
+        } catch (e) {
+          console.warn(`Error getting dtype for column ${targetColumn}:`, e);
+          currentType = '';
+        }
+        if (currentType === type) {
+          return;
+        }
+        try {
+          console.log(`Converting column ${targetColumn} from ${currentType} to ${type}`);
+          console.log(` column ${column} -Target column: ${targetColumn} with type ${type}`);
+          console.log(` Updatd DF columns ${updatedDF.columns}`);
+          updatedDF = updatedDF.asType(targetColumn, type);
+          isDataFrameUpdated = true;
+        } catch (error) {
+          setdfUpdateerror(`Failed to convert column ${targetColumn} to ${type}: ${error}`);
+          console.warn(`Failed to convert column ${targetColumn} to ${type}:`, error);
+        }
+      });
+      
+      if (isDataFrameUpdated) {
+        setDataFrame(updatedDF);
+        console.log("DataFrame updated successfully");
+      }
+      
+    } catch (error) {
+      console.error("Error applying column changes:", error);
+    }
+  };
   
   // Calculate column widths
   const columnWidths = useMemo(() => {
     // Create a fixed width for all columns
     return columns.reduce((acc, column) => {
-      acc[column] = DEFAULT_COLUMN_WIDTH;
+      acc[column] = columnsWidth;
       return acc;
     }, {} as Record<string, number>);
-  }, [columns]);
+  }, [columns, columnsWidth]);
   
   return (
     <div className="w-full p-5 rounded-md bg-white dark:bg-zinc-900 shadow-md mb-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-['Montserrat'] font-semibold">Data Table</h2>
         <div className="flex gap-2">
+          <Button variant="secondary" size="small" onClick={handleOpenRenameDialog}>
+            <AiOutlineEdit  /> Rename Columns
+          </Button>
           <Button variant="secondary" size="small" onClick={handleExport}>
             <FiDownload /> Export
           </Button>
+          
           <a ref={csvLinkRef} className="hidden"></a>
         </div>
       </div>
@@ -121,7 +201,7 @@ const DataTable: FunctionComponent = (): ReactElement => {
           overflowY: 'hidden',
           position: 'relative'
         }}>
-          <table className="border-collapse table-fixed" style={{ width: `${Object.keys(columnWidths).length * DEFAULT_COLUMN_WIDTH}px` }}>
+          <table className="border-collapse table-fixed" style={{ width: `${Object.keys(columnWidths).length * columnsWidth}px` }}>
             <thead>
               <tr className="bg-zinc-100 dark:bg-zinc-800">
                 {columns.map((column: string, index: number) => (
@@ -206,6 +286,14 @@ const DataTable: FunctionComponent = (): ReactElement => {
           </div>
         </div>
       )}
+      <RenameColumnsDialog 
+        isOpen={isRenameDialogOpen}
+        onClose={() => {setIsRenameDialogOpen(false) ; setdfUpdateerror(null)}}
+        columns={columns}
+        onSave={handleSaveRenamedColumns}
+        dataTypes={columnDataTypes}
+        error={dfUpdateerror}
+      />
     </div>
   );
 };

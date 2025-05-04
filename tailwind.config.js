@@ -45,5 +45,8 @@ export default {
       },
     },
   },
+  variants: {
+    placeholderColor: ['responsive', 'focus', 'hover', 'active'],
+  },
   plugins: [],
 }

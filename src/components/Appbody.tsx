@@ -1,4 +1,4 @@
-import { FunctionComponent, ReactElement } from 'react';
+import { FunctionComponent, ReactElement, useState, useEffect } from 'react';
 import { useData } from '../hooks/useData';
 import DataLoader from './DataLoader';
 import DataSummary from './DataSummary';
@@ -7,7 +7,19 @@ import UnivariateStats from './UnivariateStats';
 
 const Appbody: FunctionComponent = (): ReactElement => {
   const { dataFrame } = useData();
-  const is_table_populated = dataFrame && dataFrame.shape && dataFrame.shape[0] > 0;
+  const [is_table_populated, setIsTablePopulated] = useState(false);
+  
+  useEffect(() => {
+    const hasData = dataFrame && 
+                    Array.isArray(dataFrame.shape) && 
+                    dataFrame.shape.length >= 2 && 
+                    dataFrame.shape[0] > 0;
+    
+    setIsTablePopulated(hasData);
+    if (hasData) {
+      console.log("Data loaded successfully:", `${dataFrame.shape[0]} rows, ${dataFrame.shape[1]} columns`);
+    }
+  }, [dataFrame]);
 
   return (
     <div className="app-body container">

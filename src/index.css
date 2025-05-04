@@ -29,6 +29,9 @@
   input[type='number'] {
     -moz-appearance: textfield;
   }
+  input::placeholder {
+    @apply text-gray-500 dark:text-gray-400;
+  }
 }
 
 
@@ -123,37 +126,39 @@
 
   /* Button Styles */
   .btn {
-    @apply rounded transition duration-200 ease-in-out flex items-center justify-center gap-2 font-mono text-xs cursor-pointer;
+    @apply rounded transition duration-200 ease-in-out flex items-center justify-center gap-2 font-mono text-xs cursor-pointer
+      disabled:opacity-70 disabled:cursor-not-allowed;
   }
 
   .btn-primary {
     @apply bg-zinc-900 text-white hover:bg-black dark:bg-zinc-800 dark:hover:bg-zinc-700 
-      disabled:bg-zinc-300 dark:disabled:bg-zinc-700 disabled:cursor-not-allowed;
+      disabled:bg-zinc-400 dark:disabled:bg-zinc-700 disabled:hover:bg-zinc-400 dark:disabled:hover:bg-zinc-700;
   }
 
   .btn-success {
     @apply bg-zinc-800 text-white hover:bg-black dark:bg-black dark:hover:bg-zinc-900 
-      disabled:bg-zinc-400 dark:disabled:bg-zinc-800 disabled:cursor-not-allowed;
+      disabled:bg-zinc-500 dark:disabled:bg-zinc-800 disabled:hover:bg-zinc-500 dark:disabled:hover:bg-zinc-800;
   }
 
   .btn-icon {
     @apply bg-transparent text-zinc-500 dark:text-zinc-400 dark:hover:text-zinc-300 
-      disabled:bg-transparent disabled:text-zinc-400;
+      disabled:bg-transparent disabled:text-zinc-400 disabled:opacity-50;
   }
 
   .btn-link {
     @apply bg-transparent text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300 
-      underline hover:no-underline disabled:text-zinc-400 dark:disabled:text-zinc-600 disabled:cursor-not-allowed;
+      underline hover:no-underline disabled:text-zinc-400 dark:disabled:text-zinc-600;
   }
 
   .btn-secondary {
     @apply bg-zinc-200 text-zinc-700 hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600
-      disabled:bg-zinc-100 dark:disabled:bg-zinc-800 disabled:cursor-not-allowed;
+      disabled:bg-zinc-200 dark:disabled:bg-zinc-800 disabled:text-zinc-400 dark:disabled:text-zinc-500
+      disabled:hover:bg-zinc-200 dark:disabled:hover:bg-zinc-800;
   }
 
   .btn-danger {
     @apply bg-zinc-700 text-white hover:bg-zinc-800 dark:bg-zinc-900 dark:hover:bg-black
-      disabled:bg-zinc-400 dark:disabled:bg-zinc-800 disabled:cursor-not-allowed;
+      disabled:bg-zinc-500 dark:disabled:bg-zinc-800 disabled:hover:bg-zinc-500 dark:disabled:hover:bg-zinc-800;
   }
 
   .btn-small {

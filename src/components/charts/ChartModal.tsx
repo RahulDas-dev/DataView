@@ -31,7 +31,8 @@ const ChartModal: FunctionComponent<{
           )
           .map(val => Number(val)); // Convert all to numbers for Plotly
         
-        const layout = {
+        // Fix type errors by using the correct literal types for xref and yref
+        const layout: Partial<Plotly.Layout> = {
           title: `Distribution of ${selectedColumn || 'Data'}`,
           xaxis: { title: selectedColumn || 'Value' },
           yaxis: { title: 'Frequency' },
@@ -39,8 +40,8 @@ const ChartModal: FunctionComponent<{
             {
               x: mean,
               y: 0,
-              xref: 'x',
-              yref: 'paper',
+              xref: 'x', // No type assertion needed - already a literal
+              yref: 'paper', // No type assertion needed - already a literal
               text: `Mean: ${Number(mean).toFixed(2)}`,
               showarrow: true,
               arrowhead: 2,
@@ -51,8 +52,8 @@ const ChartModal: FunctionComponent<{
             {
               x: median,
               y: 0.1,
-              xref: 'x' as 'x' | 'paper',
-              yref: 'paper' as 'x' | 'paper',
+              xref: 'x', // No type assertion needed - already a literal
+              yref: 'paper', // No type assertion needed - already a literal
               text: `Median: ${Number(median).toFixed(2)}`,
               showarrow: true,
               arrowhead: 2,
@@ -83,7 +84,7 @@ const ChartModal: FunctionComponent<{
         const values = frequencies.map(f => String(f[0]));
         const counts = frequencies.map(f => Number(f[1]));
         
-        const layout = {
+        const layout: Partial<Plotly.Layout> = {
           title: `Frequency Distribution of ${selectedColumn || 'Data'}`,
           xaxis: { title: selectedColumn || 'Value' },
           yaxis: { title: 'Frequency' },

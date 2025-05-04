@@ -13,7 +13,7 @@ const RadioCheckbox = forwardRef<HTMLInputElement, RadioCheckboxProps>(
   ({ label, value, onChange, disabled = false, name, className = '' }, ref): ReactElement => {
     return (
       <div 
-        className={`flex items-center gap-2 ${className} cursor-pointer`}
+        className={`flex items-center gap-2 ${className} cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 ${disabled ? 'pointer-events-none' : ''}`}
         onClick={() => !disabled && onChange()}
       >
         <div className="relative flex items-center">
@@ -26,25 +26,17 @@ const RadioCheckbox = forwardRef<HTMLInputElement, RadioCheckboxProps>(
             disabled={disabled}
             className="sr-only" // Hide the default radio but keep functionality
           />
-          <div className={`w-4 h-4 border rounded-full flex items-center justify-center ${
-            disabled 
-              ? 'border-zinc-400 bg-zinc-200 dark:border-zinc-600 dark:bg-zinc-700' 
-              : 'border-zinc-400 dark:border-zinc-500'
-            } transition-all duration-200`}
+          <div className="w-4 h-4 border rounded-full flex items-center justify-center border-zinc-400 dark:border-zinc-500 transition-all duration-200
+            disabled:border-zinc-400 disabled:bg-zinc-200 disabled:dark:border-zinc-600 disabled:dark:bg-zinc-700"
           >
             {value && (
-              <div className={`w-2 h-2 rounded-full bg-zinc-600 dark:bg-zinc-400 ${
-                disabled ? 'opacity-50' : ''
-              }`}></div>
+              <div className="w-2 h-2 rounded-full bg-zinc-600 dark:bg-zinc-400 disabled:opacity-50"></div>
             )}
           </div>
         </div>
         <label 
-          className={`text-sm font-mono select-none ${
-            disabled 
-              ? 'text-zinc-400 dark:text-zinc-500' 
-              : 'text-zinc-700 dark:text-zinc-300'
-          }`}
+          className="text-sm font-mono select-none text-zinc-700 dark:text-zinc-300
+            disabled:text-zinc-400 disabled:dark:text-zinc-500"
         >
           {label}
         </label>

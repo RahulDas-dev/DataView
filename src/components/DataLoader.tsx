@@ -1,95 +1,195 @@
-import { FunctionComponent, ReactElement, ChangeEvent, useCallback, useRef, useReducer, useState, useEffect } from 'react';
+import { FunctionComponent, ReactElement, useCallback, useRef, useReducer, ChangeEvent } from 'react';
 import { FiRefreshCw, FiSettings } from 'react-icons/fi';
 import { Button } from './Button';
-import { DataFrame } from "danfojs";
 import { useData } from '../hooks/useData';
 import RadioCheckbox from './RadioCheckbox';
-import FileBrowser from './FileBrowser';
+import FileBrowser, { FileBrowserHandle } from './FileBrowser';
 import FetchUrl from './FetchUrl';
 import SettingsDialog from './SettingsDialog';
-import { dataLoaderReducer, init_state, ActionType } from '../reducers/dataLoaderReducer';
+import { validateFile, validateUrl } from '../utility/FileUtility';
+import { dataLoaderReducer, init_state, ActionType } from '../utility/dataLoaderReducer';
 
 const DataLoader: FunctionComponent = (): ReactElement => {
-  const file_browser_ref = useRef<HTMLInputElement>(null);
-  const { setDataFrame } = useData();
+  //const file_browser_ref = useRef<HTMLInputElement>(null);
+  const fileBrowserRef = useRef<FileBrowserHandle>(null);
+  const { setDataFrame, resetDataFrame } = useData();
   const [state, dispatch] = useReducer(dataLoaderReducer, init_state);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [showResetButton, setShowResetButton] = useState(false);
   
-  // Always keep the button in the DOM, just control its visibility
-  useEffect(() => {
-    if (state.is_restbtn_visible) {
-      // Delay the transition to make it smooth
-      const timer = setTimeout(() => {
-        setShowResetButton(true);
-      }, 100);
-      return () => clearTimeout(timer);
+  const { 
+    uploadType, 
+    isSettingsOpen, 
+    showResetButton, 
+    disableProcesBtn, 
+    disableFileInput, 
+    disableCheckBox, 
+    error, 
+    fileInput,
+    fileUrl,
+    //isLoading,
+    // loadingStatus
+  } = state;
+
+  const handleFileChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+        
+        const validationErr_ = validateFile(e.target.files[0]);
+        if (validationErr_) {
+          dispatch({ 
+            type: ActionType.PROCESS_ERROR, 
+            payload: { error: new Error(validationErr_) }
+          });
+          return;
+        }
+        dispatch({ 
+          type: ActionType.SET_FILE_OBJECT, 
+          payload: { file_object: e.target.files[0] } 
+        });
     } else {
-      setShowResetButton(false);
+      dispatch({ 
+        type: ActionType.SET_FILE_OBJECT, 
+        payload: { file_object: null } 
+      });
     }
-  }, [state.is_restbtn_visible]);
-
-  const resetOperation = useCallback(() => {
-    dispatch({ type: ActionType.RESET_LOADER });
-    if (file_browser_ref.current) {
-      file_browser_ref.current.value = "";
-    }
-    setDataFrame(new DataFrame());
-  }, [setDataFrame]);
-
-  const handleFileBrowse = useCallback(() => {
-    if (!state.file_load_scheme) {
-      dispatch({ type: ActionType.RESET_FILE_AND_URL });
-      dispatch({ type: ActionType.SET_LOAD_SCHEM_AS_FILE });
-    }
-  }, [state.file_load_scheme]);
-
-  const handleUrlUpload = useCallback(() => {
-    if (state.file_load_scheme) {
-      dispatch({ type: ActionType.RESET_FILE_AND_URL });
-      dispatch({ type: ActionType.SET_LOAD_SCHEM_AS_URL });
-    }
-  }, [state.file_load_scheme]);
-
-  const onUrlChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    dispatch({ type: ActionType.SET_FILE_URL, payload: { file_url: e.target.value } });
   }, []);
 
-  // Function to handle file selection
- /*  const handleFileChange = useCallback((file: File | null) => {
-    dispatch({ type: ActionType.SET_FILE_OBJECT, payload: { file_object: file } });
-  }, []); */
+  const handleUrlChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    dispatch({ 
+      type: ActionType.SET_FILE_URL, 
+      payload: { file_url: e.target.value } 
+    });
+    /* if (file_browser_ref.current) {
+      file_browser_ref.current.value = e.target.value;
+    } */
+  }, []);
 
-  // Separated error handling
-  const handleError = useCallback((error: unknown) => {
-    if (error instanceof Error) {
-      console.error(error.message);
-      dispatch({ type: ActionType.SET_ERROR, payload: { error: error.message } });
+  const handleInputBlur = useCallback(() => {
+    if (fileUrl) {
+      const validationErr_ = validateUrl(fileUrl);
+      if (validationErr_) {
+        dispatch({ 
+          type: ActionType.PROCESS_ERROR, 
+          payload: { error: new Error(validationErr_) }
+        });
+        return;
+      }
     } else {
-      console.error(error);
-      dispatch({ type: ActionType.SET_UNKNOWN_ERROR });
+      dispatch({ 
+        type: ActionType.SET_FILE_URL, 
+        payload: { file_url: '' } 
+      });
     }
-    dispatch({ type: ActionType.SET_RESET_BTN_VISIBLE });
-  }, []);
+  }, [fileUrl]);
 
-  // Set loading state 
-  const handleLoadingState = useCallback(() => {
-    dispatch({ type: ActionType.URL_LOAD_INIT });
-  }, []);
+  const processFile = useCallback(async () => {
+    dispatch({ type: ActionType.PROCESS_START });
+    
+    const validationErr_ = validateFile(fileInput);
+    if (validationErr_) {
+      dispatch({ 
+        type: ActionType.PROCESS_ERROR, 
+        payload: { error: new Error(validationErr_) }
+      });
+      return;
+    }
+    
+    try {
+      console.log(`Processing file: ${fileInput?.name}`);
+      const startTime = performance.now();      
+      
+      dispatch({ 
+        type: ActionType.PROCESS_LOADING, 
+        payload: { status: 'Parsing CSV data...' } 
+      });
+      const fileUrl = URL.createObjectURL(fileInput!);
+      const danfo = await import('danfojs')
+      const df = await danfo.readCSV(fileUrl)
+      if (!df || df.isEmpty || df.shape[0] === 0) {
+        dispatch({
+          type: ActionType.PROCESS_ERROR,
+          payload: { error: new Error('Empty DataFrame')}
+        });
+        return 
+      }else{
+        setDataFrame(df);
+        dispatch({ type: ActionType.PROCESS_SUCCESS });
+      }
+      const endTime = performance.now();
+      console.log(`Processing time: ${(endTime - startTime).toFixed(2)}ms`);
+    } catch (error) {
+          dispatch({
+            type: ActionType.PROCESS_ERROR,
+            payload: { error: new Error(`Error processing file: ${error instanceof Error ? error.message : String(error)}`) }
+          });
+    }
+  }, [fileInput, setDataFrame]);
 
-  // Function to handle successful data processing
-  const handleProcessSuccess = useCallback(() => {
-    // Set the reset button to be visible
-    dispatch({ type: ActionType.SET_RESET_BTN_VISIBLE });
-  }, []);
+  const processUrl = useCallback(async () => {
+    dispatch({ type: ActionType.PROCESS_START });
+    const validationErr_ = validateUrl(fileUrl);
+    if (validationErr_) {
+      dispatch({ 
+        type: ActionType.PROCESS_ERROR, 
+        payload: { error: new Error(validationErr_) }
+      });
+      return;
+    }
+    try {
+      console.log(`Processing URL: ${fileUrl}`);
+      const startTime = performance.now();
+      dispatch({ 
+        type: ActionType.PROCESS_LOADING, 
+        payload: { status: 'Fetching data from URL...' } 
+      });
+      const { readCSV } = await import('danfojs');
+      const df = await readCSV(fileUrl);
+      if (!df || df.isEmpty || df.shape[0] === 0) {
+        dispatch({
+          type: ActionType.PROCESS_ERROR,
+          payload: { error: new Error('Empty DataFrame')}
+        });
+        return;
+      } else{
+        setDataFrame(df);
+        dispatch({ type: ActionType.PROCESS_SUCCESS });
+      }
+      const endTime = performance.now();
+      console.log(`Processing time: ${(endTime - startTime).toFixed(2)}ms`);
+    } catch (error: unknown) {
+      dispatch({ 
+        type: ActionType.PROCESS_ERROR, 
+        payload: { error: new Error('Failed to process URL: ' + (error instanceof Error ? error.message : String(error))) }
+      });
+    }
+  }, [fileUrl, setDataFrame]);
 
-  // Handlers for settings dialog
-  const handleOpenSettings = useCallback(() => {
-    setIsSettingsOpen(true);
-  }, []);
+  const handleReset = useCallback(() => {
+    dispatch({ type: ActionType.RESET });
+    if (fileBrowserRef.current) {
+      fileBrowserRef.current.reset();
+    }
+    resetDataFrame();
+  }, [resetDataFrame]);
 
-  const handleCloseSettings = useCallback(() => {
-    setIsSettingsOpen(false);
+  const handleCloseettings = useCallback(() => {
+    dispatch({ 
+      type: ActionType.SET_SETTINGS_CLOSE, 
+      payload: { isOpen: false } 
+    });
+    }, []);
+  
+  const handleSettingsOpen = useCallback(() => {
+    dispatch({ 
+      type: ActionType.SET_SETTINGS_OPEN, 
+      payload: { isOpen: true } 
+    });
+  }, []);  
+
+  const toggleCheckboxSelection = useCallback((value: 'file'| 'url') => {
+    //file_browser_ref.current=null;
+    dispatch({ 
+      type: ActionType.SET_UPLOAD_TYPE, 
+      payload: { uploadType: value } 
+    });
   }, []);
 
   return (
@@ -98,23 +198,23 @@ const DataLoader: FunctionComponent = (): ReactElement => {
         <div className="flex gap-4">
           <RadioCheckbox
             label="Browse File"
-            value={state.file_load_scheme}
-            onChange={handleFileBrowse}
-            disabled={state.is_chkbox_disabled}
+            value={uploadType==='file'? true : false}
+            onChange={()=> toggleCheckboxSelection('file')}
+            disabled={disableCheckBox}
             name="loader-type"
           />
           <RadioCheckbox
             label="URL Upload"
-            value={!state.file_load_scheme}
-            onChange={handleUrlUpload}
-            disabled={state.is_chkbox_disabled}
+            value={uploadType==='url'? true : false}
+            onChange={()=> toggleCheckboxSelection('url')}
+            disabled={disableCheckBox}
             name="loader-type"
           />
         </div>
         <Button
           variant="icon"
           size="small"
-          onClick={handleOpenSettings}
+          onClick={handleSettingsOpen}
           aria-label="Settings"
           className="bg-zinc-200 dark:bg-zinc-700 p-2 rounded-full hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-colors"
         >
@@ -123,47 +223,48 @@ const DataLoader: FunctionComponent = (): ReactElement => {
       </div>
       
       <div className="w-full">
-        {state.file_load_scheme ? (
+        {uploadType=='file' ? (
           <FileBrowser
-            disabled={state.is_inputs_disabled}
-            onError={handleError}
-            onSuccess={handleProcessSuccess}
-            loadingState={handleLoadingState}
-            ref={file_browser_ref}
+            disableInput={disableFileInput}
+            disablebtn={disableProcesBtn}
+            onFileChange={handleFileChange}
+            processFile={processFile}
+            ref={fileBrowserRef}
           />
         ) : (
           <FetchUrl
-            fileurl={state.file_url}
-            disabled={state.is_inputs_disabled}
-            onChange={onUrlChange}
-            onError={handleError}
-            onSuccess={handleProcessSuccess}
-            loadingState={handleLoadingState}
+            disableInput={disableFileInput}
+            disablebtn={disableProcesBtn}
+            onUrlChange={handleUrlChange}
+            onUrlBlur={handleInputBlur}
+            processUrl={processUrl}
+            ref={fileBrowserRef}
           />
         )}
       </div>
       
       <div className="w-full flex flex-row gap-1 justify-between items-center">
-        <div className={`flex justify-center items-center px-3 py-1 font-mono text-xs ${state.error ? 'text-red-500 bg-red-50 dark:bg-red-900/20 rounded-md' : 'text-transparent'}`}>
-          {state.error || 'No errors'}
+        <div className={`flex justify-center items-center px-3 py-1 font-mono text-xs ${error ? 'text-red-500 bg-red-50 dark:bg-red-900/20 rounded-md' : 'text-transparent'}`}>
+          {error?.message || 'No errors'}
         </div>
         
         {/* Always render the button but control visibility with CSS */}
         <Button
           variant="secondary"
           size="small"
-          onClick={resetOperation}
+          onClick={handleReset}
           className={`whitespace-nowrap min-w-24 h-9 rounded-lg shadow-sm hover:shadow px-4 font-medium hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-all duration-500 ease-in-out ${showResetButton ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         >
           <FiRefreshCw className="text-sm animate-pulse" /> Reset
         </Button>
       </div>
       
-      {/* Settings Dialog */}
-      <SettingsDialog
-        isOpen={isSettingsOpen}
-        onClose={handleCloseSettings}
-      />
+      {isSettingsOpen &&       
+        <SettingsDialog
+          isOpen={isSettingsOpen}
+          onClose={handleCloseettings}
+        />
+      }
     </div>
   );
 };

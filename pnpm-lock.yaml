@@ -11,6 +11,9 @@ dependencies:
   danfojs:
     specifier: ^1.2.0
     version: 1.2.0(seedrandom@3.0.5)
+  lodash:
+    specifier: ^4.17.21
+    version: 4.17.21
   plotly.js-dist-min:
     specifier: ^3.0.1
     version: 3.0.1
@@ -31,6 +34,9 @@ devDependencies:
   '@eslint/js':
     specifier: ^9.22.0
     version: 9.25.1
+  '@types/lodash':
+    specifier: ^4.17.16
+    version: 4.17.16
   '@types/plotly.js-basic-dist':
     specifier: ^1.54.4
     version: 1.54.4
@@ -925,6 +931,10 @@ packages:
 
   /@types/json-schema@7.0.15:
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
+    dev: true
+
+  /@types/lodash@4.17.16:
+    resolution: {integrity: sha512-HX7Em5NYQAXKW+1T+FiuG27NGwzJfCX3s1GjOa7ujxZa52kjJLOr4FUxT+giF6Tgxv1e+/czV/iTtBw27WTU9g==}
     dev: true
 
   /@types/long@4.0.2:
@@ -1965,6 +1975,10 @@ packages:
 
   /lodash.truncate@4.4.2:
     resolution: {integrity: sha512-jttmRe7bRse52OsWIMDLaXxWqRAmtIUccAQ3garviCqJjafXOfNMO0yMfNpdD6zbGaTU0P5Nz7e7gAT6cKmJRw==}
+    dev: false
+
+  /lodash@4.17.21:
+    resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
     dev: false
 
   /long@4.0.0:

@@ -1,99 +1,80 @@
-import { ChangeEvent, forwardRef, ReactElement, use, useCallback, useEffect, useReducer, useState } from 'react';
+import { ChangeEvent, forwardRef, ReactElement, useCallback, useImperativeHandle, useRef} from 'react';
 import { HiOutlineDocument, HiOutlinePlay } from 'react-icons/hi2';
 import { Button } from './Button';
-import { useData } from '../hooks/useData';
-import { validateFile } from '../utility/FileUtility';
-import { ActionType, dataLoaderReducer, init_state } from '../reducers/dataLoaderReducer';
 
 interface FileBrowserProps {
-  disabled: boolean;
-  onError: (error: unknown) => void;
-  onSuccess?: () => void;  // Added success callback
-  loadingState?: () => void;
-  className?: string;
+  disableInput: boolean;
+  disablebtn: boolean;
+  onFileChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  processFile: () => void;
 }
 
-const FileBrowser = forwardRef<HTMLInputElement, FileBrowserProps>(
-  ({ disabled, onError, onSuccess, loadingState, className = '' }, ref): ReactElement => {
-    const { setDataFrame } = useData();
-    const [state, dispatch] = useReducer(dataLoaderReducer, init_state);
-    const [disabledBtn, setDisabledBtn] = useState(true);
-    const [disabledInput, setdisabledInput] = useState(false);
+export interface FileBrowserHandle {
+  reset: () => void;
+}
+
+const FileBrowser = forwardRef<FileBrowserHandle, FileBrowserProps>(
+  ({ disableInput, disablebtn, onFileChange, processFile}, ref): ReactElement => {
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const displayInputRef = useRef<HTMLInputElement>(null);
+
+    useImperativeHandle(ref, () => ({
+      reset: () => {
+        // Reset the hidden file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+        if (displayInputRef.current) {
+          displayInputRef.current.value = '';
+        }
+      }
+    }));
 
     const handleFileChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+      onFileChange(e);
       if (e.target.files && e.target.files.length > 0) {
-          const validationErr_ = validateFile(e.target.files[0]);
-          if (validationErr_) {
-            onError(new Error(validationErr_));
-            return;
-          }
-          dispatch({ type: ActionType.SET_FILE_OBJECT, payload: { file_object: e.target.files[0] } });
-          setDisabledBtn(false);
-      } else {
-        dispatch({ type: ActionType.SET_FILE_OBJECT, payload: { file_object: null } });
-        setdisabledInput(true);
-      }
-    }, []);
-
-    const processFile = useCallback(async () => {
-      // Validate file exists before proceeding
-      const validationErr_ = validateFile(state.file_object);
-      if (validationErr_) {
-        onError(new Error(validationErr_));
-        return;
-      }
-      
-      try {
-        console.log(`File Name ${state.file_object?.name}`);
-        if (loadingState) loadingState();
-        setDisabledBtn(true);
-        setdisabledInput(true);
-        // Create a URL for the file
-        const fileUrl = URL.createObjectURL(state.file_object!);
-        
-        // Using dynamic import for readCSV
-        const danfojs = await import('danfojs');
-        const df = await danfojs.readCSV(fileUrl);
-        if (!df || df.isEmpty || df.shape[0] === 0) {
-          setDisabledBtn(false); // Ensure button is re-enabled on error
-          setdisabledInput(false);
-          onError(new Error('DataFrame is empty'));
-          return;
+        if (displayInputRef.current) {
+          displayInputRef.current.value = e.target.files[0].name;
         }
-        console.log(`DataFrame Shape [${df.shape}] `);
-        // Update the DataFrame in the context
-        setDataFrame(df);
-        setDisabledBtn(true);
-        setdisabledInput(true);
-        // Call onSuccess callback to notify parent component
-        if (onSuccess) onSuccess();
-      } catch (error: unknown) {
-        setDisabledBtn(false);
-        setdisabledInput(false);
-        onError(error);
       }
-    }, [state.file_object, onError, onSuccess, setDataFrame, loadingState]);
+    }, [onFileChange]);
 
     return (
-      <div className={`w-full flex flex-col md:flex-row gap-3 items-center ${className}`}>
+      <div className="w-full flex flex-col md:flex-row gap-3 items-center">
         <div className="w-full flex-1 relative">
           <div className="flex items-center">
-            <label 
-              className="flex items-center justify-center h-9 px-4 bg-zinc-300 hover:bg-zinc-400 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-zinc-700 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-600 cursor-pointer transition-colors rounded-l-lg text-sm font-mono"
-            >
-              <HiOutlineDocument className="mr-2 text-lg" />
-              Choose file
+            <div className="relative w-full overflow-hidden rounded-lg">
+              {/* This label will trigger the file input when clicked */}
+              <label 
+                htmlFor="file-upload" 
+                className="absolute left-0 top-0 bottom-0 flex items-center justify-center px-4 border border-zinc-300 dark:border-zinc-600 text-sm font-mono z-10 rounded-l-lg transition-colors
+                  bg-zinc-300 hover:bg-zinc-400 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-zinc-700 dark:text-zinc-200 cursor-pointer
+                  disabled:bg-zinc-200 disabled:dark:bg-zinc-800 disabled:text-zinc-400 disabled:dark:text-zinc-500 disabled:cursor-not-allowed disabled:border-zinc-200 disabled:dark:border-zinc-700 disabled:opacity-70"
+              >
+                <div className="flex items-center">
+                  <HiOutlineDocument className="mr-1 text-lg disabled:opacity-50" />
+                  Choose file
+                </div>
+              </label>
               <input
-                type="file"
-                ref={ref}
-                accept=".csv"
-                onChange={handleFileChange}
-                disabled={disabledInput||disabled}
-                className="hidden"
+                type="text"
+                readOnly
+                ref={displayInputRef}
+                disabled={disableInput}
+                placeholder="No File selected"
+                className="w-full flex-1 h-9 px-3 pl-38 py-0 bg-white dark:bg-zinc-800 border border-l-0 border-zinc-300 dark:border-zinc-600 rounded-r-lg text-sm font-mono outline-none focus:outline-none focus:ring-0 transition-colors text-zinc-600 dark:text-zinc-300
+                disabled:opacity-70 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:dark:bg-zinc-900 
+                disabled:border-zinc-200 disabled:dark:border-zinc-700 disabled:text-zinc-400 disabled:dark:text-zinc-500"
               />
-            </label>
-            <div className="flex-1 h-9 px-3 bg-white dark:bg-zinc-800 border border-l-0 border-zinc-300 dark:border-zinc-600 rounded-r-lg flex items-center text-sm font-mono truncate text-zinc-600 dark:text-zinc-300">
-              {state.file_object ? state.file_object.name : "No file chosen"}
+              <input
+                id="file-upload"
+                type="file"
+                accept=".csv"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                disabled={disableInput}
+                className="sr-only" /* Hide the actual file input */
+              />
             </div>
           </div>
         </div>
@@ -101,7 +82,7 @@ const FileBrowser = forwardRef<HTMLInputElement, FileBrowserProps>(
           variant="primary"
           size="small"
           onClick={processFile}
-          disabled={disabledBtn||disabled}
+          disabled={disablebtn}
           className="whitespace-nowrap min-w-24 h-9 rounded-lg shadow-sm hover:shadow px-4 font-medium transition-all"
         >
           <HiOutlinePlay className="text-lg" /> Process

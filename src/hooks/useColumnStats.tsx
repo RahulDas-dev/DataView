@@ -80,7 +80,7 @@ const safelyExecute = <T,>(fn: () => T, fallback: T): T => {
 const useColumnStats = (dataFrame: DataFrame, selectedColumn: string | null): ColumnStats => {
   return useMemo(() => {
     // Return empty stats if dataFrame or selectedColumn isn't available yet
-    if (!selectedColumn || !dataFrame) {
+    if (!selectedColumn || !dataFrame|| dataFrame.isEmpty || dataFrame.shape[0] === 0) {
       return {
         count: 0,
         nullCount: 0,
