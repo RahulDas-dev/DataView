@@ -78,7 +78,7 @@ const NullValuesHeatmap: FunctionComponent<NullValuesHeatmapProps> = ({
           [1, dataAbsent]
         ],
         showscale: false,
-        hovertemplate: 'Row: %{y}<br>Column: %{x}<br><extra></extra>',
+        hovertemplate: 'Row - %{y}<br>Column - %{x}<br><extra></extra>',
         name: 'Data Matrix'
       },
       {
@@ -133,7 +133,6 @@ const NullValuesHeatmap: FunctionComponent<NullValuesHeatmapProps> = ({
           size: 10
         },
         showgrid: false,
-        // gridcolor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
       },
       yaxis: {
         showticklabels: false,

@@ -9,14 +9,28 @@
 @layer base {
   :root {
     color-scheme: light dark;
+    margin: 0;
+    padding: 0;
   }
 
   html,
-  body {
+  body,
+  #root {
     margin: 0;
     padding: 0;
-    overflow-x: hidden;
     @apply scroll-smooth;
+  }
+
+  /* Force body to start from the top */
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #root {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
 
   /* Remove spinner buttons from number inputs globally */

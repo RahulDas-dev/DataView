@@ -8,6 +8,9 @@ function App() {
       <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
         <TitleBar />
         <Appbody />
+        {/* <div className="pt-1"> 
+          <Appbody />
+        </div> */}
       </div>
     </ErrorBoundary>
   );
