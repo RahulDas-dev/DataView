@@ -3,12 +3,20 @@ import { useData } from '../hooks/useData';
 import useColumnStats, { NumericStats, BooleanStats, CategoricalStats } from '../hooks/useColumnStats';
 import { Button } from './Button';
 import { FiBarChart2, FiDownload } from 'react-icons/fi';
-import ChartModal from './charts/ChartModal';
+import HistogramPlot from './charts/HistogramPlot';
+import KDEPlot from './charts/KDEPlot';
+import BoxPlot from './charts/BoxPlot';
+import ViolinPlot from './charts/ViolinPlot';
+import CountPlot from './charts/CountPlot';
+import PieChart from './charts/PieChart';
+import { useTheme } from '../hooks/useTheme';
+import TabSelector from './common/TabSelector';
 
 const UnivariateStats: FunctionComponent = (): ReactElement => {
   const { dataFrame } = useData();
   const [selectedColumn, setSelectedColumn] = useState<string | null>(null);
-  const [showChartModal, setShowChartModal] = useState(false);
+  const { isDark } = useTheme();
+  //const [showChartModal, setShowChartModal] = useState(false);
   
   // Get column names - memoized
   const columns = useMemo(() => {
@@ -45,6 +53,86 @@ const UnivariateStats: FunctionComponent = (): ReactElement => {
     return freqs && Array.isArray(freqs) ? freqs.slice(0, 10) : [];
   }, [stats]);
   
+  // Distribution tab options for numerical data
+  const distributionTabs = useMemo(() => [
+    {
+      id: 'histogram',
+      label: 'Histogram + KDE',
+      content: (
+        <HistogramPlot 
+          columnName={selectedColumn || ''}
+          columnValues={columnValues as number[]}
+          binCount={30}
+        />
+      )
+    },
+    {
+      id: 'kde',
+      label: 'KDE Plot',
+      content: (
+        <KDEPlot 
+          columnName={selectedColumn || ''}
+          columnValues={columnValues as number[]}
+          smoothingFactor={1.0}
+        />
+      )
+    }
+  ], [selectedColumn, columnValues]);
+  
+  // Box and Violin tab options for numerical data
+  const boxViolinTabs = useMemo(() => [
+    {
+      id: 'boxplot',
+      label: 'Box Plot',
+      content: (
+        <BoxPlot 
+          columnName={selectedColumn || ''}
+          columnValues={columnValues as number[]}
+        />
+      )
+    },
+    {
+      id: 'violin',
+      label: 'Violin Plot',
+      content: (
+        <ViolinPlot 
+          columnName={selectedColumn || ''}
+          columnValues={columnValues as number[]}
+        />
+      )
+    }
+  ], [selectedColumn, columnValues]);
+  
+  // Count plot tab options for categorical data
+  const countPlotTabs = useMemo(() => [
+    {
+      id: 'countplot',
+      label: 'Count Plot',
+      content: (
+        <CountPlot 
+          columnName={selectedColumn || ''}
+          categoryValues={columnValues as string[]}
+          maxCategories={20}
+        />
+      )
+    }
+  ], [selectedColumn, columnValues]);
+  
+  // Pie chart tab options for categorical data
+  const pieChartTabs = useMemo(() => [
+    {
+      id: 'piechart',
+      label: 'Pie Chart',
+      content: (
+        <PieChart 
+          columnName={selectedColumn || ''}
+          categoryValues={columnValues as string[]}
+          maxCategories={10}
+        />
+      )
+    }
+  ], [selectedColumn, columnValues]);
+  
   return (
     <div className="w-full p-5 rounded-md bg-white dark:bg-zinc-900 shadow-md mb-20">
       <div className="flex justify-between items-center mb-4">
@@ -53,7 +141,7 @@ const UnivariateStats: FunctionComponent = (): ReactElement => {
           <Button 
             variant="secondary" 
             size="small"
-            onClick={() => setShowChartModal(true)}
+            onClick={() => {}}
             disabled={!stats || stats.error}
           >
             <FiBarChart2 /> Chart
@@ -64,7 +152,7 @@ const UnivariateStats: FunctionComponent = (): ReactElement => {
         </div>
       </div>
       
-        <div className="mb-4 flex items-center">
+      <div className="mb-4 flex items-center">
         <label htmlFor="column-select" className="inline-block text-sm font-mono mr-3 whitespace-nowrap">
           Select Column:
         </label>
@@ -206,16 +294,47 @@ const UnivariateStats: FunctionComponent = (): ReactElement => {
         </div>
       )}
       
-      {/* Chart Modal */}
-      {stats && !stats.error && (
-        <ChartModal 
-          isOpen={showChartModal}
-          onClose={() => setShowChartModal(false)}
-          stats={stats}
-          selectedColumn={selectedColumn}
-          dataValues={columnValues}
-        />
-      )}
+      {/* Visualizations for Numerical Data */}
+      { 
+        stats && stats.numeric && (
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-zinc-50 dark:bg-zinc-800 p-5 rounded-md">
+              <h3 className="text-lg font-['Montserrat'] font-medium mb-3">Distribution</h3>
+              <TabSelector 
+                tabs={distributionTabs}
+                defaultTabId="histogram"
+              />
+            </div>
+            <div className="bg-zinc-50 dark:bg-zinc-800 p-5 rounded-md">
+              <h3 className="text-lg font-['Montserrat'] font-medium mb-3">Distribution Plot</h3>
+              <TabSelector 
+                tabs={boxViolinTabs}
+                defaultTabId="boxplot"
+              />
+            </div>
+        </div> )
+      }
+
+      {/* Visualizations for Categorical Data */}
+      { 
+        stats && (stats.categorical || stats.boolean) && (
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-zinc-50 dark:bg-zinc-800 p-5 rounded-md">
+              <h3 className="text-lg font-['Montserrat'] font-medium mb-3">Frequency</h3>
+              <TabSelector 
+                tabs={countPlotTabs}
+                defaultTabId="countplot"
+              />
+            </div>
+            <div className="bg-zinc-50 dark:bg-zinc-800 p-5 rounded-md">
+              <h3 className="text-lg font-['Montserrat'] font-medium mb-3">Proportion</h3>
+              <TabSelector 
+                tabs={pieChartTabs}
+                defaultTabId="piechart"
+              />
+            </div>
+        </div> )
+      }
     </div>
   );
 };

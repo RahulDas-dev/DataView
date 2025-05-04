@@ -4,6 +4,7 @@ import DataLoader from './DataLoader';
 import DataSummary from './DataSummary';
 import DataTable from './DataTable';
 import UnivariateStats from './UnivariateStats';
+import BivariateStats from './BivariateStats';
 
 const Appbody: FunctionComponent = (): ReactElement => {
   const { dataFrame } = useData();
@@ -37,6 +38,7 @@ const Appbody: FunctionComponent = (): ReactElement => {
       {is_table_populated && <DataTable />}
       {is_table_populated && <DataSummary />}
       {is_table_populated && <UnivariateStats />}
+      {/* {is_table_populated && <BivariateStats />} */}
     </div>
   );
 };
