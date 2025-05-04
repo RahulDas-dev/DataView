@@ -30,7 +30,7 @@ const DataSummary: FunctionComponent = (): ReactElement => {
 
   return (
     <div className="w-full p-5 rounded-md bg-white dark:bg-zinc-900 shadow-md mb-6">
-      <h2 className="text-xl font-['Montserrat'] font-semibold mb-4">Data Summary</h2>
+      <h2 className="text-xl font-['Montserrat']  mb-4">Data Summary</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Left side - Summary metrics in a single card */}
           <div className="bg-zinc-50 dark:bg-zinc-800 p-5 rounded-md flex flex-col">

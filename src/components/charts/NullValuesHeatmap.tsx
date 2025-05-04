@@ -64,7 +64,7 @@ const NullValuesHeatmap: FunctionComponent<NullValuesHeatmapProps> = ({
     const paper_bgcolor = darkMode ? '#27272a' : '#f9fafb'; // zinc-800 for dark, gray-50 for light
     const plot_bgcolor = darkMode ? '#27272a' : '#f9fafb';
     
-    const dataPresent = '#ffffff';
+    const dataPresent = darkMode ? '#272727' : '#f8f8f8';
     const dataAbsent = '#F08080';
     
     const data: Plotly.Data[] = [

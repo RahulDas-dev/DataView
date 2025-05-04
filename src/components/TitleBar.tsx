@@ -40,8 +40,8 @@ const TitleBar: FunctionComponent = (): ReactElement => {
         <header className={`fixed top-0 left-0 right-0 w-full z-[100] shadow-md bg-white dark:bg-zinc-900 transition-transform duration-300 ${
             isScrollingUp ? 'translate-y-0' : '-translate-y-full'
         }`}>    
-            <div className="w-full">
-                <nav className="flex items-center justify-between py-2 px-4">
+            <div className="container">
+                <nav className="flex items-center justify-between py-2">
                     {/* Logo */}
                     <div className="flex items-center gap-2 text-md font-medium text-zinc-800 dark:text-zinc-100 font-['Montserrat']">
                         <FiGrid className="text-lg text-zinc-600 dark:text-zinc-300" /> 

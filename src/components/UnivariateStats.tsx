@@ -48,7 +48,7 @@ const UnivariateStats: FunctionComponent = (): ReactElement => {
   return (
     <div className="w-full p-5 rounded-md bg-white dark:bg-zinc-900 shadow-md mb-20">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-['Montserrat'] font-semibold">Univariate Statistics</h2>
+        <h2 className="text-xl font-['Montserrat']">Univariate Statistics</h2>
         <div className="flex gap-2">
           <Button 
             variant="secondary" 
