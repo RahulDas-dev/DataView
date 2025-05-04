@@ -1,11 +1,15 @@
 import { FunctionComponent, ReactElement, useMemo } from 'react';
 import { useData } from '../hooks/useData';
+import { useTheme } from '../hooks/useTheme';
 import useDataStats from '../hooks/useDataStats';
+import NullValuesHeatmap from './charts/NullValuesHeatmap';
+import BarChart from './charts/BarChart';
 
 const DataSummary: FunctionComponent = (): ReactElement => {
   const { dataFrame } = useData();
   const stats = useDataStats(dataFrame);
-
+  const { isDark } = useTheme();
+  console.log("isDark:", isDark);
   // Calculate total null percentage
   const totalNullStats = useMemo(() => {
     if (stats.isEmpty) return { totalNullCount: 0, totalNullPercentage: 0 };
@@ -27,12 +31,6 @@ const DataSummary: FunctionComponent = (): ReactElement => {
   return (
     <div className="w-full p-5 rounded-md bg-white dark:bg-zinc-900 shadow-md mb-6">
       <h2 className="text-xl font-['Montserrat'] font-semibold mb-4">Data Summary</h2>
-      
-      {stats.isEmpty ? (
-        <div className="text-zinc-500 dark:text-zinc-400 text-sm font-mono">
-          No data loaded. Please load a CSV file to view statistics.
-        </div>
-      ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Left side - Summary metrics in a single card */}
           <div className="bg-zinc-50 dark:bg-zinc-800 p-5 rounded-md flex flex-col">
@@ -121,7 +119,18 @@ const DataSummary: FunctionComponent = (): ReactElement => {
             </div>
           </div>
         </div>
-      )}
+        { 
+        totalNullStats.totalNullCount > 0 && (
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-zinc-50 dark:bg-zinc-800 p-5 rounded-md">
+              <h3 className="text-lg font-['Montserrat'] font-medium mb-3">Null Values HeatMap</h3>
+              <NullValuesHeatmap dataFrame={dataFrame} darkMode={isDark} />
+            </div>
+            <div className="bg-zinc-50 dark:bg-zinc-800 p-5 rounded-md">
+              <h3 className="text-lg font-['Montserrat'] font-medium mb-3">Null Count by Column</h3>
+              <BarChart columnsInfo={stats.columnsInfo} darkMode={isDark} />
+            </div>
+        </div> )}     
     </div>
   );
 };
