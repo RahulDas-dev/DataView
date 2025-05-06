@@ -28,17 +28,20 @@ const TabSelector: FunctionComponent<TabSelectorProps> = ({
           <button
             key={tab.id}
             onClick={() => setActiveTabId(tab.id)}
-            className={`py-2 px-4 text-sm font-mono transition-colors ${
+            className={`py-2 px-4 text-sm font-mono transition-all duration-300 ease-in-out relative ${
               activeTabId === tab.id
-                ? 'border-b-2 border-blue-500 text-blue-600 dark:text-blue-400'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                ? 'text-zinc-900 dark:text-zinc-100 font-medium'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 opacity-70 hover:opacity-100'
             }`}
           >
             {tab.label}
+            {activeTabId === tab.id && (
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-zinc-500 dark:bg-zinc-400 transform transition-transform duration-300 ease-out animate-fadeIn" />
+            )}
           </button>
         ))}
       </div>
-      <div>
+      <div className="animate-fadeIn">
         {activeTab?.content}
       </div>
     </div>

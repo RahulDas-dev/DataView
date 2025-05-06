@@ -1,6 +1,7 @@
 import { FunctionComponent, useEffect, useRef } from 'react';
 import Plotly from 'plotly.js-dist-min';
 import { useTheme } from '../../hooks/useTheme';
+import { getChartColors, getPlotlyConfig, getBaseLayout } from './PlotConfigs';
 
 interface BoxPlotProps {
   columnName: string;
@@ -29,13 +30,8 @@ const BoxPlot: FunctionComponent<BoxPlotProps> = ({
     // Clear previous chart
     chartDiv.innerHTML = '';
 
-    // Define chart colors based on theme
-    const textColor = isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)';
-    const paper_bgcolor = isDark ? '#27272a' : '#f9fafb'; // zinc-800 for dark, gray-50 for light
-    const plot_bgcolor = isDark ? '#27272a' : '#f9fafb';
-    const boxColor = isDark ? 'rgba(16, 185, 129, 0.7)' : 'rgba(16, 185, 129, 0.7)'; // emerald-500 with opacity
-    const lineColor = isDark ? 'rgba(16, 185, 129, 0.9)' : 'rgba(16, 185, 129, 0.9)'; // emerald-500 with opacity
-    const outlierColor = isDark ? 'rgba(244, 63, 94, 0.8)' : 'rgba(244, 63, 94, 0.8)'; // rose-500 with opacity
+    // Get theme colors
+    const colors = getChartColors(isDark);
 
     // Filter out null or NaN values for valid calculations
     const validValues = columnValues.filter(val => val !== null && !isNaN(Number(val)));
@@ -46,96 +42,70 @@ const BoxPlot: FunctionComponent<BoxPlotProps> = ({
     }
 
     // Create box plot trace
+    // Update the boxTrace object with better outlier styling
     const boxTrace: Plotly.Data = {
       type: 'box',
       y: validValues,
       name: columnName,
       boxmean: true, // Show mean as a dashed line
       marker: {
-        color: boxColor,
-        outliercolor: outlierColor,
-        line: {
-          color: lineColor,
-          width: 1.5
-        }
+        color: colors.boxplotColor,
+        // Make outliers clearly distinct with a different zinc color
+        outliercolor: isDark ? 'rgba(244, 244, 245, 0.95)' : 'rgba(0, 0, 27, 0)', // zinc-100/zinc-900 for outliers
+        size: 6,
+        opacity: 0.8,
+        /* line: {
+          color: isDark ? 'rgba(212, 212, 216, 0.9)' : 'rgba(39, 39, 42, 0.9)', // zinc-300/zinc-800
+          width: 1
+        } */
       },
       line: {
-        color: lineColor,
+        color: isDark ? 'rgba(244, 244, 245, 0.9)' : 'rgba(63, 63, 70, 0.9)', // zinc-100/zinc-700
         width: 1.5
       },
       hoverinfo: 'y+name',
       boxpoints: 'outliers',
       jitter: 0.3,
       pointpos: 0,
-      whiskerwidth: 0.8,
-      fillcolor: boxColor,
-      hoveron: 'boxes+points'
+      // whiskerwidth: 0.8,
+      fillcolor: colors.boxplotColor,
+      hoveron: 'points'
     };
 
-    // Create layout
+    // Create layout using shared base layout
     const layout: Partial<Plotly.Layout> = {
-      title: {
-        text: `Box Plot of ${columnName}`,
-        font: {
-          family: "'Montserrat', sans-serif",
-          size: 16
-        },
-        x: 0.05,
-        xanchor: 'left'
+      ...getBaseLayout(isDark, chartDiv.offsetWidth, '', columnName),
+
+      xaxis: {
+        showticklabels: false,
+        zeroline: false
       },
-      font: {
-        family: 'monospace',
-        color: textColor
-      },
-      yaxis: {
-        title: {
-          text: columnName,
-          font: {
-            family: 'monospace',
-            size: 12
-          }
-        },
-        zeroline: false,
-        gridcolor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-        tickfont: {
-          family: 'monospace',
-          size: 10
-        }
-      },
-      paper_bgcolor,
-      plot_bgcolor,
       margin: {
         l: 50,
         r: 10,
         t: 40,
         b: 20
       },
-      height: 400,
-      width: chartDiv.offsetWidth,
-      autosize: false,
       showlegend: false,
-      annotations: [
+      /* annotations: [
         {
           x: 0,
           y: 1.12,
           xref: 'paper',
           yref: 'paper',
-          text: 'Outliers shown in red',
+          text: 'Outliers shown in lighter color',
           showarrow: false,
           font: {
             family: 'monospace',
             size: 10,
-            color: textColor
+            color: colors.textColor
           }
         }
-      ]
+      ] */
     };
 
-    const config: Partial<Plotly.Config> = {
-      responsive: true,
-      displayModeBar: true,
-      modeBarButtonsToRemove: ['lasso2d', 'select2d']
-    };
+    // Get standard Plotly config with customized filename
+    const config = getPlotlyConfig(`boxplot_${columnName}`);
 
     // Make the plot responsive
     const handleResize = () => {
@@ -156,7 +126,7 @@ const BoxPlot: FunctionComponent<BoxPlotProps> = ({
       } catch (err) {
         console.error('Error rendering box plot:', err);
         if (chartDiv) {
-          chartDiv.innerHTML = '<div class="p-4 text-red-500 font-mono text-sm">Error rendering box plot</div>';
+          chartDiv.innerHTML = '<div class="p-4 text-zinc-500 dark:text-zinc-400 font-mono text-sm">Error rendering box plot</div>';
         }
       }
     }, 50);

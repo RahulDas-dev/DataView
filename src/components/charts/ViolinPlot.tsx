@@ -1,6 +1,7 @@
 import { FunctionComponent, useEffect, useRef } from 'react';
 import Plotly from 'plotly.js-dist-min';
 import { useTheme } from '../../hooks/useTheme';
+import { getChartColors, getPlotlyConfig, getBaseLayout } from './PlotConfigs';
 
 interface ViolinPlotProps {
   columnName: string;
@@ -29,13 +30,8 @@ const ViolinPlot: FunctionComponent<ViolinPlotProps> = ({
     // Clear previous chart
     chartDiv.innerHTML = '';
 
-    // Define chart colors based on theme
-    const textColor = isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)';
-    const paper_bgcolor = isDark ? '#27272a' : '#f9fafb'; // zinc-800 for dark, gray-50 for light
-    const plot_bgcolor = isDark ? '#27272a' : '#f9fafb';
-    const violinColor = isDark ? 'rgba(124, 58, 237, 0.7)' : 'rgba(124, 58, 237, 0.7)'; // violet-600 with opacity
-    const lineColor = isDark ? 'rgba(124, 58, 237, 0.9)' : 'rgba(124, 58, 237, 0.9)'; // violet-600 with opacity
-    const insideColor = isDark ? '#27272a' : '#f9fafb'; // Match background for nice contrast
+    // Get theme colors
+    const colors = getChartColors(isDark);
 
     // Filter out null or NaN values for valid calculations
     const validValues = columnValues.filter(val => val !== null && !isNaN(Number(val)));
@@ -56,81 +52,49 @@ const ViolinPlot: FunctionComponent<ViolinPlotProps> = ({
       },
       meanline: {
         visible: true,
-        color: isDark ? 'rgba(252, 211, 77, 0.9)' : 'rgba(217, 119, 6, 0.9)', // amber-300/amber-600
+        color: isDark ? 'rgba(244, 244, 245, 0.9)' : 'rgba(39, 39, 42, 0.9)', // zinc-100/zinc-800
         width: 2
       },
       line: {
-        color: lineColor,
+        color: isDark ? 'rgba(212, 212, 216, 0.9)' : 'rgba(63, 63, 70, 0.9)', // zinc-300/zinc-700
         width: 1.5
       },
-      fillcolor: violinColor,
+      fillcolor: colors.violinColor,
       opacity: 0.8,
       points: 'outliers',
       jitter: 0.3,
       pointpos: 0,
-      hoveron: 'violins+points+kde',
+      hoveron: 'violins+points',
       side: 'both',
       width: 1.8,
       spanmode: 'soft',
       marker: {
         symbol: 'circle',
         opacity: 0.7,
-        color: isDark ? 'rgba(249, 115, 22, 0.7)' : 'rgba(249, 115, 22, 0.7)', // orange-500
+        color: isDark ? 'rgba(244, 244, 245, 0.8)' : 'rgba(24, 24, 27, 0.8)', // zinc-100/zinc-900
         size: 5,
         line: {
-          color: isDark ? 'rgba(249, 115, 22, 0.9)' : 'rgba(249, 115, 22, 0.9)', // orange-500
+          color: isDark ? 'rgba(228, 228, 231, 0.9)' : 'rgba(39, 39, 42, 0.9)', // zinc-200/zinc-800
           width: 1
         }
       }
     };
 
-    // Create layout
+    // Create layout using shared base layout
     const layout: Partial<Plotly.Layout> = {
-      title: {
-        text: `Violin Plot of ${columnName}`,
-        font: {
-          family: "'Montserrat', sans-serif",
-          size: 16
-        },
-        x: 0.05,
-        xanchor: 'left'
-      },
-      font: {
-        family: 'monospace',
-        color: textColor
-      },
-      yaxis: {
-        title: {
-          text: columnName,
-          font: {
-            family: 'monospace',
-            size: 12
-          }
-        },
-        zeroline: false,
-        gridcolor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-        tickfont: {
-          family: 'monospace',
-          size: 10
-        }
-      },
+      ...getBaseLayout(isDark, chartDiv.offsetWidth, '', columnName),
       xaxis: {
         visible: false,
         showticklabels: false
       },
-      paper_bgcolor,
-      plot_bgcolor,
       margin: {
         l: 50,
         r: 10,
-        t: 40,
+        t: 20,
         b: 20
       },
-      height: 400,
-      width: chartDiv.offsetWidth,
-      autosize: false,
       showlegend: false,
-      annotations: [
+      /* annotations: [
         {
           x: 0,
           y: 1.12,
@@ -141,17 +105,14 @@ const ViolinPlot: FunctionComponent<ViolinPlotProps> = ({
           font: {
             family: 'monospace',
             size: 10,
-            color: textColor
+            color: colors.textColor
           }
         }
-      ]
+      ] */
     };
 
-    const config: Partial<Plotly.Config> = {
-      responsive: true,
-      displayModeBar: true,
-      modeBarButtonsToRemove: ['lasso2d', 'select2d']
-    };
+    // Get standard Plotly config with customized filename
+    const config = getPlotlyConfig(`violinplot_${columnName}`);
 
     // Make the plot responsive
     const handleResize = () => {
@@ -172,7 +133,7 @@ const ViolinPlot: FunctionComponent<ViolinPlotProps> = ({
       } catch (err) {
         console.error('Error rendering violin plot:', err);
         if (chartDiv) {
-          chartDiv.innerHTML = '<div class="p-4 text-red-500 font-mono text-sm">Error rendering violin plot</div>';
+          chartDiv.innerHTML = '<div class="p-4 text-zinc-500 dark:text-zinc-400 font-mono text-sm">Error rendering violin plot</div>';
         }
       }
     }, 50);

@@ -29,7 +29,8 @@ const BarChart: FunctionComponent<BarChartProps> = ({
     const textColor = darkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)';
     const paper_bgcolor = darkMode ? '#27272a' : '#f9fafb'; // zinc-800 for dark, gray-50 for light
     const plot_bgcolor = darkMode ? '#27272a' : '#f9fafb';
-    const barColor = '#F08080'; // Red color for consistency with the null values heatmap
+    // const barColor = '#F08080'; // Red color for consistency with the null values heatmap
+    const barColor = darkMode ? '#f8f8f8':'#353935' ;
     
     // Sort columns by null count in descending order
     const sortedColumns = [...columnsInfo].sort((a, b) => b.nullCount - a.nullCount);

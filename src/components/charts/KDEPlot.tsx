@@ -1,6 +1,7 @@
 import { FunctionComponent, useEffect, useRef } from 'react';
 import Plotly from 'plotly.js-dist-min';
 import { useTheme } from '../../hooks/useTheme';
+import { getChartColors, getPlotlyConfig, getBaseLayout } from './PlotConfigs';
 
 interface KDEPlotProps {
   columnName: string;
@@ -31,12 +32,8 @@ const KDEPlot: FunctionComponent<KDEPlotProps> = ({
     // Clear previous chart
     chartDiv.innerHTML = '';
 
-    // Define chart colors based on theme
-    const textColor = isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)';
-    const paper_bgcolor = isDark ? '#27272a' : '#f9fafb'; // zinc-800 for dark, gray-50 for light
-    const plot_bgcolor = isDark ? '#27272a' : '#f9fafb';
-    const kdeColor = isDark ? 'rgba(239, 68, 68, 0.9)' : 'rgba(239, 68, 68, 0.9)'; // red-500 with opacity
-    const areaColor = isDark ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.2)'; // red-500 with lower opacity
+    // Get theme colors
+    const colors = getChartColors(isDark);
 
     // Filter out null or NaN values for valid calculations
     const validValues = columnValues.filter(val => val !== null && !isNaN(Number(val)));
@@ -90,11 +87,11 @@ const KDEPlot: FunctionComponent<KDEPlotProps> = ({
       mode: 'lines',
       name: 'Density',
       line: {
-        color: kdeColor,
+        color: colors.kdeColor, // Using shared color
         width: 2.5
       },
       fill: 'tozeroy',
-      fillcolor: areaColor,
+      fillcolor: isDark ? 'rgba(161, 161, 170, 0.2)' : 'rgba(113, 113, 122, 0.2)', // zinc-400/zinc-500 with low opacity
       hovertemplate: 'Value: %{x}<br>Density: %{y}<extra></extra>'
     };
 
@@ -106,7 +103,7 @@ const KDEPlot: FunctionComponent<KDEPlotProps> = ({
       type: 'scatter',
       marker: {
         symbol: 'line-ns',
-        color: kdeColor,
+        color: colors.kdeColor, // Using shared color
         size: 10,
         opacity: 0.5,
         line: {
@@ -117,35 +114,11 @@ const KDEPlot: FunctionComponent<KDEPlotProps> = ({
       showlegend: false
     };
 
-    // Create layout
+    // Get base layout and customize for KDE plot
     const layout: Partial<Plotly.Layout> = {
-      title: {
-        text: `Density Distribution of ${columnName}`,
-        font: {
-          family: "'Montserrat', sans-serif",
-          size: 16
-        },
-        x: 0.05,
-        xanchor: 'left'
-      },
-      font: {
-        family: 'monospace',
-        color: textColor
-      },
-      xaxis: {
-        title: {
-          text: columnName,
-          font: {
-            family: 'monospace',
-            size: 12
-          }
-        },
-        tickfont: {
-          family: 'monospace',
-          size: 10
-        }
-      },
+      ...getBaseLayout(isDark, chartDiv.offsetWidth, columnName, 'Density'),
       yaxis: {
+        ...getBaseLayout(isDark, chartDiv.offsetWidth).yaxis,
         title: {
           text: 'Density',
           font: {
@@ -153,32 +126,14 @@ const KDEPlot: FunctionComponent<KDEPlotProps> = ({
             size: 12
           }
         },
-        tickfont: {
-          family: 'monospace',
-          size: 10
-        },
         rangemode: 'tozero'
       },
-      paper_bgcolor,
-      plot_bgcolor,
-      margin: {
-        l: 50,
-        r: 10,
-        t: 40,
-        b: 50
-      },
-      height: 400,
-      width: chartDiv.offsetWidth,
-      autosize: false,
       showlegend: false,
       hovermode: 'closest'
     };
 
-    const config: Partial<Plotly.Config> = {
-      responsive: true,
-      displayModeBar: true,
-      modeBarButtonsToRemove: ['lasso2d', 'select2d']
-    };
+    // Get standard Plotly config with customized filename
+    const config = getPlotlyConfig(`kde_${columnName}`);
 
     // Make the plot responsive
     const handleResize = () => {
@@ -199,7 +154,7 @@ const KDEPlot: FunctionComponent<KDEPlotProps> = ({
       } catch (err) {
         console.error('Error rendering KDE plot:', err);
         if (chartDiv) {
-          chartDiv.innerHTML = '<div class="p-4 text-red-500 font-mono text-sm">Error rendering KDE plot</div>';
+          chartDiv.innerHTML = '<div class="p-4 text-zinc-500 dark:text-zinc-400 font-mono text-sm">Error rendering KDE plot</div>';
         }
       }
     }, 50);

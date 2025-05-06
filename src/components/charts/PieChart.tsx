@@ -1,6 +1,7 @@
 import { FunctionComponent, useEffect, useRef } from 'react';
 import Plotly from 'plotly.js-dist-min';
 import { useTheme } from '../../hooks/useTheme';
+import { getChartColors, getPlotlyConfig, getBaseLayout } from './PlotConfigs';
 
 interface PieChartProps {
   columnName: string;
@@ -31,27 +32,8 @@ const PieChart: FunctionComponent<PieChartProps> = ({
     // Clear previous chart
     chartDiv.innerHTML = '';
 
-    // Define chart colors based on theme
-    const textColor = isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)';
-    const paper_bgcolor = isDark ? '#27272a' : '#f9fafb'; // zinc-800 for dark, gray-50 for light
-    const plot_bgcolor = isDark ? '#27272a' : '#f9fafb';
-    const colorPalette = [
-      '#3b82f6', // blue-500
-      '#ec4899', // pink-500
-      '#8b5cf6', // violet-500
-      '#10b981', // emerald-500
-      '#f59e0b', // amber-500
-      '#ef4444', // red-500
-      '#14b8a6', // teal-500
-      '#6366f1', // indigo-500
-      '#f97316', // orange-500
-      '#84cc16', // lime-500
-      '#06b6d4', // cyan-500
-      '#d946ef', // fuchsia-500
-      '#6b7280', // gray-500
-      '#0ea5e9', // sky-500
-      '#22c55e', // green-500
-    ];
+    // Get theme colors
+    const colors = getChartColors(isDark);
 
     // Filter out null or empty values
     const validValues = categoryValues.filter(val => val !== null && val !== undefined && val !== '');
@@ -96,24 +78,33 @@ const PieChart: FunctionComponent<PieChartProps> = ({
       textinfo: 'percent',
       textposition: 'inside',
       automargin: true,
-      hoverinfo: 'label+percent+value',
+      hoverinfo: 'label+percent+name',
+      textfont: {
+        color: isDark ? 'rgba(0, 0, 0, 0.9)': 'rgba(255, 255, 255, 0.9)',
+        family: 'monospace',
+        size: 11
+      },
       marker: {
         colors: labels.map((_, i) => {
+          // For "Other" category, use a distinctive color in the zinc palette
           if (hasOtherCategory && i === labels.length - 1) {
-            return isDark ? '#6b7280' : '#9ca3af'; // gray-500/400 for "Other"
+            return isDark ? 'rgba(82, 82, 91, 0.8)' : 'rgba(161, 161, 170, 0.8)'; // zinc-600/zinc-400
           }
-          return colorPalette[i % colorPalette.length];
+          // Use the extended barGradient for pie chart slices
+          return colors.barGradient[i % colors.barGradient.length];
         }),
         line: {
-          color: isDark ? '#27272a' : '#ffffff',
-          width: 1
+          color: isDark ? '#27272a' : '#f8fafc', // zinc-800/slate-50
+          width: 1.5
         }
       },
-      pull: labels.map((label) => label === 'Other' ? 0.05 : 0) // Pull out the "Other" slice slightly
+      pull: labels.map((label) => label === 'Other' ? 0.05 : 0), // Pull out the "Other" slice slightly
+      rotation: 45 // Start at 45 degrees for better visual balance
     };
 
-    // Create layout
+    // Create layout using shared base layout
     const layout: Partial<Plotly.Layout> = {
+      ...getBaseLayout(isDark, chartDiv.offsetWidth),
       title: {
         text: `Distribution of ${columnName}`,
         font: {
@@ -123,21 +114,12 @@ const PieChart: FunctionComponent<PieChartProps> = ({
         x: 0.05,
         xanchor: 'left'
       },
-      font: {
-        family: 'monospace',
-        color: textColor
-      },
-      paper_bgcolor,
-      plot_bgcolor,
       margin: {
         l: 20,
         r: 20,
         t: 40,
         b: 20
       },
-      height: 400,
-      width: chartDiv.offsetWidth,
-      autosize: false,
       showlegend: true,
       legend: {
         orientation: 'v',
@@ -148,17 +130,14 @@ const PieChart: FunctionComponent<PieChartProps> = ({
           family: 'monospace',
           size: 10
         },
-        bgcolor: isDark ? 'rgba(39, 39, 42, 0.7)' : 'rgba(255, 255, 255, 0.7)',
+        bgcolor: colors.legendBackground,
         bordercolor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
         borderwidth: 1
       }
     };
 
-    const config: Partial<Plotly.Config> = {
-      responsive: true,
-      displayModeBar: true,
-      modeBarButtonsToRemove: ['lasso2d', 'select2d']
-    };
+    // Get standard Plotly config
+    const config = getPlotlyConfig(`piechart_${columnName}`);
 
     // Make the plot responsive
     const handleResize = () => {
@@ -179,7 +158,7 @@ const PieChart: FunctionComponent<PieChartProps> = ({
       } catch (err) {
         console.error('Error rendering pie chart:', err);
         if (chartDiv) {
-          chartDiv.innerHTML = '<div class="p-4 text-red-500 font-mono text-sm">Error rendering pie chart</div>';
+          chartDiv.innerHTML = '<div class="p-4 text-zinc-500 dark:text-zinc-400 font-mono text-sm">Error rendering pie chart</div>';
         }
       }
     }, 50);

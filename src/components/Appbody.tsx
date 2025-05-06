@@ -4,7 +4,7 @@ import DataLoader from './DataLoader';
 import DataSummary from './DataSummary';
 import DataTable from './DataTable';
 import UnivariateStats from './UnivariateStats';
-import BivariateStats from './BivariateStats';
+/* import BivariateStats from './BivariateStats'; */
 
 const Appbody: FunctionComponent = (): ReactElement => {
   const { dataFrame } = useData();

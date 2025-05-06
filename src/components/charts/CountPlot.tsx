@@ -1,6 +1,7 @@
 import { FunctionComponent, useEffect, useRef } from 'react';
 import Plotly from 'plotly.js-dist-min';
 import { useTheme } from '../../hooks/useTheme';
+import { getChartColors, getPlotlyConfig, getBaseLayout } from './PlotConfigs';
 
 interface CountPlotProps {
   columnName: string;
@@ -31,13 +32,8 @@ const CountPlot: FunctionComponent<CountPlotProps> = ({
     // Clear previous chart
     chartDiv.innerHTML = '';
 
-    // Define chart colors based on theme
-    const textColor = isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)';
-    const paper_bgcolor = isDark ? '#27272a' : '#f9fafb'; // zinc-800 for dark, gray-50 for light
-    const plot_bgcolor = isDark ? '#27272a' : '#f9fafb';
-    const barColors = isDark 
-      ? ['#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe'] // Blues
-      : ['#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe']; // Blues
+    // Get theme colors
+    const colors = getChartColors(isDark);
 
     // Filter out null or empty values
     const validValues = categoryValues.filter(val => val !== null && val !== undefined && val !== '');
@@ -62,6 +58,9 @@ const CountPlot: FunctionComponent<CountPlotProps> = ({
     const categories = sortedCategories.map(([category]) => category);
     const counts = sortedCategories.map(([, count]) => count);
 
+    // Define zinc gradient colors for bars
+    const barColors = colors.barGradient;
+
     // Create trace for the count plot
     const countTrace: Plotly.Data = {
       x: categories,
@@ -77,62 +76,27 @@ const CountPlot: FunctionComponent<CountPlotProps> = ({
       hovertemplate: '<b>%{x}</b><br>Count: %{y}<extra></extra>'
     };
 
-    // Create layout
+    // Create layout using the shared base layout
     const layout: Partial<Plotly.Layout> = {
-      title: {
-        text: `Category Counts for ${columnName}`,
-        font: {
-          family: "'Montserrat', sans-serif",
-          size: 16
-        },
-        x: 0.05,
-        xanchor: 'left'
-      },
-      font: {
-        family: 'monospace',
-        color: textColor
-      },
+      ...getBaseLayout(isDark, chartDiv.offsetWidth, '', 'Count'),
       xaxis: {
+        ...getBaseLayout(isDark, chartDiv.offsetWidth).xaxis,
         title: '',
         tickangle: -45,
-        tickfont: {
-          family: 'monospace',
-          size: 10
-        },
         automargin: true
       },
-      yaxis: {
-        title: {
-          text: 'Count',
-          font: {
-            family: 'monospace',
-            size: 12
-          }
-        },
-        tickfont: {
-          family: 'monospace',
-          size: 10
-        }
-      },
-      paper_bgcolor,
-      plot_bgcolor,
       margin: {
         l: 50,
         r: 10,
         t: 40,
         b: sortedCategories.length > 10 ? 120 : 80 // Adjust bottom margin based on number of categories
       },
-      height: 400,
-      width: chartDiv.offsetWidth,
-      autosize: false,
-      bargap: 0.2
+      bargap: 0.2,
+      showlegend: false
     };
 
-    const config: Partial<Plotly.Config> = {
-      responsive: true,
-      displayModeBar: true,
-      modeBarButtonsToRemove: ['lasso2d', 'select2d']
-    };
+    // Get standard Plotly config
+    const config = getPlotlyConfig(`countplot_${columnName}`);
 
     // Make the plot responsive
     const handleResize = () => {
@@ -153,7 +117,7 @@ const CountPlot: FunctionComponent<CountPlotProps> = ({
       } catch (err) {
         console.error('Error rendering count plot:', err);
         if (chartDiv) {
-          chartDiv.innerHTML = '<div class="p-4 text-red-500 font-mono text-sm">Error rendering count plot</div>';
+          chartDiv.innerHTML = '<div class="p-4 text-zinc-500 dark:text-zinc-400 font-mono text-sm">Error rendering count plot</div>';
         }
       }
     }, 50);

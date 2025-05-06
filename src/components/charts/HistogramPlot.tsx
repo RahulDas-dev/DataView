@@ -1,7 +1,7 @@
 import { FunctionComponent, useEffect, useRef } from 'react';
 import Plotly from 'plotly.js-dist-min';
 import { useTheme } from '../../hooks/useTheme';
-
+import { getChartColors, getPlotlyConfig, getBaseLayout } from './PlotConfigs';
 interface HistogramPlotProps {
   columnName: string;
   columnValues: Array<number>;
@@ -27,16 +27,9 @@ const HistogramPlot: FunctionComponent<HistogramPlotProps> = ({
 
     // Store the current value of the ref in a variable to use in cleanup
     const chartDiv = chartContainerRef.current;
-
-    // Clear previous chart
     chartDiv.innerHTML = '';
 
-    // Define chart colors based on theme
-    const textColor = isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)';
-    const paper_bgcolor = isDark ? '#27272a' : '#f9fafb'; // zinc-800 for dark, gray-50 for light
-    const plot_bgcolor = isDark ? '#27272a' : '#f9fafb';
-    const histogramColor = isDark ? 'rgba(59, 130, 246, 0.7)' : 'rgba(59, 130, 246, 0.7)'; // blue-500 with opacity
-    const kdeColor = isDark ? 'rgba(239, 68, 68, 0.9)' : 'rgba(239, 68, 68, 0.9)'; // red-500 with opacity
+    const colors = getChartColors(isDark);
 
     // Filter out null or NaN values for valid calculations
     const validValues = columnValues.filter(val => val !== null && !isNaN(Number(val)));
@@ -69,7 +62,7 @@ const HistogramPlot: FunctionComponent<HistogramPlotProps> = ({
         size: binSize
       },
       marker: {
-        color: histogramColor
+        color: colors.histogramColor
       },
       hovertemplate: 'Range: %{x}<br>Count: %{y}<extra></extra>'
     };
@@ -127,81 +120,19 @@ const HistogramPlot: FunctionComponent<HistogramPlotProps> = ({
       mode: 'lines',
       name: 'Density',
       line: {
-        color: kdeColor,
+        color: colors.kdeColor,
         width: 2
       },
       hovertemplate: 'Value: %{x}<br>Density: %{y}<extra></extra>'
     };
 
     // Create layout
-    const layout: Partial<Plotly.Layout> = {
-      title: {
-        text: `Distribution of ${columnName}`,
-        font: {
-          family: "'Montserrat', sans-serif",
-          size: 16
-        },
-        x: 0.05,
-        xanchor: 'left'
-      },
-      font: {
-        family: 'monospace',
-        color: textColor
-      },
-      xaxis: {
-        title: {
-          text: columnName,
-          font: {
-            family: 'monospace',
-            size: 12
-          }
-        },
-        tickfont: {
-          family: 'monospace',
-          size: 10
-        }
-      },
-      yaxis: {
-        title: {
-          text: 'Frequency',
-          font: {
-            family: 'monospace',
-            size: 12
-          }
-        },
-        tickfont: {
-          family: 'monospace',
-          size: 10
-        }
-      },
-      paper_bgcolor,
-      plot_bgcolor,
-      margin: {
-        l: 50,
-        r: 10,
-        t: 40,
-        b: 50
-      },
-      barmode: 'overlay',
-      height: 400,
-      width: chartDiv.offsetWidth,
-      autosize: false,
-      showlegend: true,
-      legend: {
-        x: 0.95,
-        y: 0.95,
-        font: {
-          family: 'monospace',
-          size: 10
-        }
-      }
+    const layout = {
+      ...getBaseLayout(isDark, chartDiv.offsetWidth, columnName, 'Frequency'),
+      barmode: 'overlay' as const  
     };
 
-    const config: Partial<Plotly.Config> = {
-      responsive: true,
-      displayModeBar: true,
-      modeBarButtonsToRemove: ['lasso2d', 'select2d']
-    };
+    const config = getPlotlyConfig(`histogram_${columnName}`);
 
     // Make the plot responsive
     const handleResize = () => {
@@ -222,7 +153,7 @@ const HistogramPlot: FunctionComponent<HistogramPlotProps> = ({
       } catch (err) {
         console.error('Error rendering histogram plot:', err);
         if (chartDiv) {
-          chartDiv.innerHTML = '<div class="p-4 text-red-500 font-mono text-sm">Error rendering histogram plot</div>';
+          chartDiv.innerHTML = '<div class="p-4 text-zinc-500 dark:text-zinc-400 font-mono text-sm">Error rendering histogram plot</div>';
         }
       }
     }, 50);
