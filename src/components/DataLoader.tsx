@@ -8,13 +8,15 @@ import FetchUrl from './FetchUrl';
 import SettingsDialog from './SettingsDialog';
 import { validateFile, validateUrl } from '../utility/FileUtility';
 import { dataLoaderReducer, init_state, ActionType } from '../utility/dataLoaderReducer';
+import useSettings from '../hooks/useSettings';
+import { Data } from 'plotly.js-dist-min';
 
 const DataLoader: FunctionComponent = (): ReactElement => {
   //const file_browser_ref = useRef<HTMLInputElement>(null);
   const fileBrowserRef = useRef<FileBrowserHandle>(null);
   const { setDataFrame, resetDataFrame } = useData();
   const [state, dispatch] = useReducer(dataLoaderReducer, init_state);
-  
+  const { settings } = useSettings()
   const { 
     uploadType, 
     isSettingsOpen, 
@@ -91,7 +93,10 @@ const DataLoader: FunctionComponent = (): ReactElement => {
       });
       return;
     }
-    
+
+    const is_csv = fileInput?.name.endsWith('.csv')
+    const is_xlsx = fileInput?.name.endsWith('.xlsx') || fileInput?.name.endsWith('.xls')
+    const is_json = fileInput?.name.endsWith('.json')
     try {
       console.log(`Processing file: ${fileInput?.name}`);
       const startTime = performance.now();      
@@ -101,27 +106,37 @@ const DataLoader: FunctionComponent = (): ReactElement => {
         payload: { status: 'Parsing CSV data...' } 
       });
       const fileUrl = URL.createObjectURL(fileInput!);
-      const danfo = await import('danfojs')
-      const df = await danfo.readCSV(fileUrl)
+      const { DataFrame , readCSV, readExcel , readJSON } = await import('danfojs')
+      let df = new DataFrame();
+      if ( is_csv) {
+        df = await readCSV(fileUrl, {worker: true})
+      } else if (is_xlsx) {
+        df = await readExcel(fileUrl, {worker: true} )
+      }  else if (is_json) {
+        df = await readJSON(fileUrl, {worker: true} )
+      }
+      else{
+        df = await readCSV(fileUrl, {worker: true} )
+      }
       if (!df || df.isEmpty || df.shape[0] === 0) {
         dispatch({
           type: ActionType.PROCESS_ERROR,
           payload: { error: new Error('Empty DataFrame')}
         });
         return 
-      }else{
+      } else {
         setDataFrame(df);
         dispatch({ type: ActionType.PROCESS_SUCCESS });
       }
       const endTime = performance.now();
       console.log(`Processing time: ${(endTime - startTime).toFixed(2)}ms`);
     } catch (error) {
-          dispatch({
-            type: ActionType.PROCESS_ERROR,
-            payload: { error: new Error(`Error processing file: ${error instanceof Error ? error.message : String(error)}`) }
-          });
+      dispatch({
+        type: ActionType.PROCESS_ERROR,
+        payload: { error: new Error(`Error processing file: ${error instanceof Error ? error.message : String(error)}`) }
+      });
     }
-  }, [fileInput, setDataFrame]);
+  }, [settings, fileInput, setDataFrame]);
 
   const processUrl = useCallback(async () => {
     dispatch({ type: ActionType.PROCESS_START });

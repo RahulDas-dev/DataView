@@ -16,6 +16,7 @@ const SettingsDialog: FunctionComponent<SettingsDialogProps> = ({
   const [rowsPerPage, setRowsPerPage] = useState(settings.rowsPerPage);
   const [maxColsToShow, setMaxColsToShow] = useState(settings.maxColsToShow);
   const [columnsWidth, setColumnWidth] = useState(settings.columnsWidth);
+  const [columnsSpererator, setColumnSpererator] = useState(settings.columnsSpererator);
 
   // Reset form values when dialog opens
   useEffect(() => {
@@ -23,6 +24,7 @@ const SettingsDialog: FunctionComponent<SettingsDialogProps> = ({
       setRowsPerPage(settings.rowsPerPage);
       setMaxColsToShow(settings.maxColsToShow);
       setColumnWidth(settings.columnsWidth);
+      setColumnSpererator(settings.columnsSpererator);
     }
   }, [isOpen, settings]);
 
@@ -30,10 +32,11 @@ const SettingsDialog: FunctionComponent<SettingsDialogProps> = ({
     updateSettings({
       rowsPerPage,
       maxColsToShow,
-      columnsWidth
+      columnsWidth,
+      columnsSpererator
     });
     onClose();
-  }, [rowsPerPage, maxColsToShow,columnsWidth, updateSettings, onClose]);
+  }, [rowsPerPage, maxColsToShow, columnsWidth,columnsSpererator, updateSettings, onClose]);
 
   if (!isOpen) return null;
 
@@ -111,7 +114,33 @@ const SettingsDialog: FunctionComponent<SettingsDialogProps> = ({
                 Adjust the width of table columns (80-300px)
               </p>
           </div>
+
+          <div>
+          <div className="flex items-center justify-between mb-1">
+            <label htmlFor="column-width" className="block text-sm mb-1">
+              Column Seperator:
+            </label>
+            <input
+              id="column-width"
+              type="string"
+              value={columnsSpererator}
+              maxLength={1}
+              onChange={(e) => {
+                // Limit to a single character
+                if (e.target.value.length <= 1) {
+                  setColumnSpererator(e.target.value);
+                }
+              }}
+              className="w-24 h-8 p-2 rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-700 text-sm font-mono"
+            />
+            </div>
+            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400 text-right font-mono ">
+            Character(s) to use when separating column data in exports
+            </p>
+          </div>
         </div>
+        
+        
 
         <div className="mt-6 flex justify-end space-x-3">
           <Button variant="secondary" size="small" onClick={onClose}>
