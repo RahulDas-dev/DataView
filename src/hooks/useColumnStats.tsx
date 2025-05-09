@@ -77,22 +77,11 @@ const safelyExecute = <T,>(fn: () => T, fallback: T): T => {
  * @param selectedColumn The name of the column to compute statistics for
  * @returns An object containing various statistics for the column
  */
-const useColumnStats = (dataFrame: DataFrame, selectedColumn: string | null): ColumnStats => {
+const useColumnStats = (dataFrame: DataFrame, selectedColumn: string | null): ColumnStats| null => {
   return useMemo(() => {
     // Return empty stats if dataFrame or selectedColumn isn't available yet
     if (!selectedColumn || !dataFrame|| dataFrame.isEmpty || dataFrame.shape[0] === 0) {
-      return {
-        count: 0,
-        nullCount: 0,
-        dataType: 'Unknown',
-        numeric: false,
-        boolean: false,
-        categorical: true, // Make it categorical by default
-        error: false,
-        unique: 0,
-        mode: { value: 'N/A', frequency: 0 },
-        frequencies: []
-      } as CategoricalStats; // Explicitly cast to CategoricalStats
+      return null
     }
     
     try {

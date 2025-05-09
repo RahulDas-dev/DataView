@@ -1,6 +1,7 @@
-import { FunctionComponent, ReactElement, useMemo } from 'react';
-import Plot from 'react-plotly.js';
-import { countBy } from 'lodash';
+import { FunctionComponent, ReactElement, useEffect, useMemo, useRef } from 'react';
+import Plotly from 'plotly.js-dist-min';
+import { useTheme } from '../../hooks/useTheme';
+import { getChartColors, getPlotlyConfig, getBaseLayout } from './PlotConfigs';
 
 interface HeatmapPlotProps {
   firstColumnName: string;
@@ -20,6 +21,9 @@ const HeatmapPlot: FunctionComponent<HeatmapPlotProps> = ({
   firstValues,
   secondValues
 }): ReactElement => {
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const { isDark } = useTheme();
+  
   // Process the data to create a contingency table
   const { uniqueFirstValues, uniqueSecondValues, zValues } = useMemo(() => {
     if (!firstValues.length || !secondValues.length) {
@@ -79,65 +83,134 @@ const HeatmapPlot: FunctionComponent<HeatmapPlotProps> = ({
     );
   }, [zValues]);
 
+  useEffect(() => {
+    if (!chartContainerRef.current) {
+      return;
+    }
+
+    // Store the current value of the ref in a variable to use in cleanup
+    const chartDiv = chartContainerRef.current;
+
+    // Clear previous chart
+    chartDiv.innerHTML = '';
+
+    if (uniqueFirstValues.length === 0 || uniqueSecondValues.length === 0) {
+      chartDiv.innerHTML = '<div class="w-full h-full flex items-center justify-center text-zinc-500 dark:text-zinc-400">Not enough categorical data to display a heatmap</div>';
+      return;
+    }
+
+    // Get theme colors
+    const colors = getChartColors(isDark);
+
+    // Create heatmap trace
+    const heatmapTrace: Plotly.Data = {
+      type: 'heatmap',
+      z: zValues,
+      x: uniqueSecondValues,
+      y: uniqueFirstValues,
+      colorscale: 'Viridis',
+      text: textValues.flat(),
+      hoverinfo: 'text',
+      showscale: true,
+      colorbar: {
+        title: 'Count',
+        titleside: 'right',
+        titlefont: {
+          family: 'monospace',
+          size: 10,
+          color: colors.textColor,
+          shadow: 'rgba(0, 0, 0, 0.5)',
+          weight: 2
+        },
+        tickfont: {
+          family: 'monospace',
+          size: 10,
+          color: colors.textColor,
+          shadow: 'rgba(0, 0, 0, 0.5)',
+          weight: 2
+        }
+      }
+    };
+
+    // Create base layout using the shared config function
+    const baseLayout = getBaseLayout(
+      isDark, 
+      chartDiv.offsetWidth, 
+      secondColumnName, 
+      firstColumnName
+    );
+
+    // Extend the base layout with heatmap-specific settings
+    const layout: Partial<Plotly.Layout> = {
+      ...baseLayout,
+      margin: { l: 100, r: 50, b: 100, t: 50, pad: 4 },
+      title: {
+        text: `Relationship between ${firstColumnName} and ${secondColumnName}`,
+        font: {
+          family: 'monospace',
+          size: 14,
+          color: colors.textColor
+        }
+      }
+    };
+
+    // Get standard Plotly config with customized filename
+    const config = getPlotlyConfig(`heatmap_${firstColumnName}_${secondColumnName}`);
+
+    // Make the plot responsive
+    const handleResize = () => {
+      if (chartDiv) {
+        Plotly.relayout(chartDiv, {
+          'width': chartDiv.offsetWidth
+        });
+      }
+    };
+
+    // Add a small delay to ensure the container is fully rendered
+    const timer = setTimeout(() => {
+      try {
+        if (chartDiv) {
+          Plotly.newPlot(chartDiv, [heatmapTrace], layout, config);
+          window.addEventListener('resize', handleResize);
+        }
+      } catch (err) {
+        console.error('Error rendering heatmap plot:', err);
+        if (chartDiv) {
+          chartDiv.innerHTML = '<div class="p-4 text-zinc-500 dark:text-zinc-400 font-mono text-sm">Error rendering heatmap plot</div>';
+        }
+      }
+    }, 50);
+    
+    // Cleanup function
+    return () => {
+      // Clear the timeout
+      clearTimeout(timer);
+      
+      // Remove resize event listener
+      window.removeEventListener('resize', handleResize);
+      
+      // Purge Plotly chart
+      if (chartDiv) {
+        try {
+          Plotly.purge(chartDiv);
+        } catch (err) {
+          console.error('Error cleaning up heatmap plot:', err);
+        }
+      }
+    };
+  }, [uniqueFirstValues, uniqueSecondValues, zValues, textValues, firstColumnName, secondColumnName, isDark]);
+
   return (
     <div className="w-full h-[400px] bg-white dark:bg-zinc-800 rounded-md">
-      {uniqueFirstValues.length > 0 && uniqueSecondValues.length > 0 ? (
-        <Plot
-          data={[
-            {
-              type: 'heatmap',
-              z: zValues,
-              x: uniqueSecondValues,
-              y: uniqueFirstValues,
-              colorscale: 'Viridis',
-              text: textValues,
-              hoverinfo: 'text',
-              showscale: true,
-              colorbar: {
-                title: 'Count',
-                titleside: 'right'
-              }
-            }
-          ]}
-          layout={{
-            autosize: true,
-            margin: { l: 100, r: 50, b: 100, t: 50, pad: 4 },
-            title: {
-              text: `Relationship between ${firstColumnName} and ${secondColumnName}`,
-              font: {
-                family: 'Montserrat, sans-serif',
-                size: 16
-              }
-            },
-            xaxis: {
-              title: secondColumnName,
-              titlefont: {
-                family: 'Montserrat, sans-serif',
-                size: 14
-              }
-            },
-            yaxis: {
-              title: firstColumnName,
-              titlefont: {
-                family: 'Montserrat, sans-serif',
-                size: 14
-              }
-            },
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)',
-            font: {
-              color: document.documentElement.classList.contains('dark') ? '#e4e4e7' : '#27272a'
-            }
-          }}
-          useResizeHandler={true}
-          style={{ width: '100%', height: '100%' }}
-          config={{ responsive: true }}
-        />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center text-zinc-500 dark:text-zinc-400">
-          Not enough categorical data to display a heatmap
+      <div
+        ref={chartContainerRef}
+        className="w-full h-full"
+        data-testid="heatmap-plot"
+      >
+        <div className="h-full w-full flex items-center justify-center">
+          <div className="animate-pulse text-zinc-400 font-mono text-sm">Loading visualization...</div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

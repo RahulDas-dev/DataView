@@ -25,13 +25,15 @@ export const validateUrl = (url: string): string => {
   }
 };
 
-export const validateFile = (file: File | null): string => {
+export const validateFile = (file: File | null, allowedExtensions: string[]): string => {
   if (!file) {
     return 'No file selected';
   }
-  // Check file extension for CSV
-  if (!file.name.toLowerCase().endsWith('.csv')) {
-    return 'Selected file must be a CSV file';
+  // Allow .csv, .xls, .xlsx, .json extensions
+  const fileName = file.name.toLowerCase();
+  const isValid = allowedExtensions.some(ext => fileName.endsWith(ext));
+  if (!isValid) {
+    return 'Selected file must be a CSV, XLS, XLSX, or JSON file';
   }
 
   return '';

@@ -8,6 +8,7 @@ interface ImportMetaEnv {
   readonly VITE_ROWS_PER_PAGE: string;
   readonly VITE_MAX_COLS_TO_SHOW: string;
   readonly VITE_COLUMNS_WIDTH: string;
+  readonly VITE_ALLOWED_FILE_EXTENSIONS: string;
   // more env variables...
 }
 

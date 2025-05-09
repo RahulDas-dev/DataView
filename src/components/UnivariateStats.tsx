@@ -1,4 +1,4 @@
-import { FunctionComponent, ReactElement, useState, useMemo, useEffect } from 'react';
+import { FunctionComponent, ReactElement, useState, useMemo } from 'react';
 import { useData } from '../hooks/useData';
 import useColumnStats, { NumericStats, BooleanStats, CategoricalStats } from '../hooks/useColumnStats';
 import HistogramPlot from './charts/HistogramPlot';
@@ -20,12 +20,6 @@ const UnivariateStats: FunctionComponent = (): ReactElement => {
     return dataFrame?.columns || [];
   }, [dataFrame]);
   
-  // Set first column by default if none is selected
-  useEffect(() => {
-    if ((selectedColumn && !columns.includes(selectedColumn!)) && columns.length > 0) {
-      setSelectedColumn(columns[0]);
-    }
-  }, [columns, selectedColumn]);
   
   // Use our hook for all statistics computations
   const stats = useColumnStats(dataFrame, selectedColumn);

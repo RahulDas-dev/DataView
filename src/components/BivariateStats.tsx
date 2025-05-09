@@ -1,7 +1,5 @@
-import { FunctionComponent, ReactElement, useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { FunctionComponent, ReactElement, useState, useMemo} from 'react';
 import { useData } from '../hooks/useData';
-import { Button } from './Button';
-import { FiDownload, FiPlay, FiPause, FiSkipForward } from 'react-icons/fi';
 import TabSelector from './common/TabSelector';
 import ScatterPlot from './charts/ScatterPlot';
 import ContourPlot from './charts/ContourPlot';
@@ -18,84 +16,13 @@ const BivariateStats: FunctionComponent = (): ReactElement => {
   const { dataFrame } = useData();
   const [firstColumn, setFirstColumn] = useState<string | null>(null);
   const [secondColumn, setSecondColumn] = useState<string | null>(null);
-  const [isIterating, setIsIterating] = useState<boolean>(false);
-  const [iterationSpeed, setIterationSpeed] = useState<number>(3000); // Default: 3 seconds
-  const iterationTimerRef = useRef<number | null>(null);
+
   
   // Get column names - memoized
   const columns = useMemo(() => {
     return dataFrame?.columns || [];
   }, [dataFrame]);
-  
-  // Set default columns
-  useEffect(() => {
-    if (columns.length > 0) {
-      if (!firstColumn) {
-        setFirstColumn(columns[0]);
-      }
-      if (!secondColumn && columns.length > 1) {
-        setSecondColumn(columns[1]);
-      } else if (!secondColumn) {
-        setSecondColumn(columns[0]);
-      }
-    }
-  }, [columns, firstColumn, secondColumn]);
 
-  // Function to get the next pair of columns
-  const getNextColumnPair = useCallback(() => {
-    if (columns.length < 2) return;
-
-    // Find current indices
-    const firstIndex = columns.indexOf(firstColumn || columns[0]);
-    const secondIndex = columns.indexOf(secondColumn || columns[0]);
-    
-    let newFirstIndex = firstIndex;
-    let newSecondIndex = secondIndex + 1;
-    
-    // If second index reached the end
-    if (newSecondIndex >= columns.length) {
-      newFirstIndex = (firstIndex + 1) % columns.length;
-      newSecondIndex = (newFirstIndex + 1) % columns.length;
-      
-      // If we've wrapped around and are back at the original pair
-      if (newFirstIndex === firstIndex && newSecondIndex === secondIndex) {
-        // Just use a different second column if possible
-        if (columns.length > 2) {
-          newSecondIndex = (newSecondIndex + 1) % columns.length;
-          if (newSecondIndex === newFirstIndex) {
-            newSecondIndex = (newSecondIndex + 1) % columns.length;
-          }
-        }
-      }
-    }
-    
-    // Ensure we don't select the same column for both
-    if (newFirstIndex === newSecondIndex && columns.length > 1) {
-      newSecondIndex = (newSecondIndex + 1) % columns.length;
-    }
-    
-    setFirstColumn(columns[newFirstIndex]);
-    setSecondColumn(columns[newSecondIndex]);
-  }, [columns, firstColumn, secondColumn]);
-
-  // Handle iteration
-  useEffect(() => {
-    if (isIterating) {
-      iterationTimerRef.current = window.setTimeout(() => {
-        getNextColumnPair();
-      }, iterationSpeed);
-    } else if (iterationTimerRef.current) {
-      clearTimeout(iterationTimerRef.current);
-      iterationTimerRef.current = null;
-    }
-    
-    return () => {
-      if (iterationTimerRef.current) {
-        clearTimeout(iterationTimerRef.current);
-        iterationTimerRef.current = null;
-      }
-    };
-  }, [isIterating, iterationSpeed, getNextColumnPair]);
 
   // Get column values for the charts
   const firstColumnValues = useMemo(() => {
@@ -189,10 +116,10 @@ const BivariateStats: FunctionComponent = (): ReactElement => {
         label: 'Grouped Count Plot',
         content: (
           <GroupedCountPlot
-            numericColumnName={numericColumn || ''}
-            categoricalColumnName={categoricalColumn || ''}
-            numericValues={numericValues}
-            categoricalValues={categoricalValues}
+            xColumnName={numericColumn || ''}
+            yColumnName={categoricalColumn || ''}
+            xValues={numericValues}
+            yValues={categoricalValues}
           />
         )
       },
@@ -243,29 +170,8 @@ const BivariateStats: FunctionComponent = (): ReactElement => {
     <div className="w-full p-5 rounded-md bg-white dark:bg-zinc-900 shadow-md mb-20">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-['Montserrat']">Bivariate Analysis</h2>
-        <div className="flex gap-2">
-          <Button variant="secondary" size="small">
-            <FiDownload /> Export
-          </Button>
-          <Button
-            variant="secondary"
-            size="small"
-            onClick={() => setIsIterating(!isIterating)}
-          >
-            {isIterating ? <FiPause /> : <FiPlay />} {isIterating ? 'Pause' : 'Play'}
-          </Button>
-          <Button
-            variant="secondary"
-            size="small"
-            onClick={getNextColumnPair}
-          >
-            <FiSkipForward /> Next
-          </Button>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="flex items-center">
+        <div className="flex gap-8">
+          <div className="flex items-center">
           <label htmlFor="first-column-select" className="inline-block text-sm font-mono mr-3 whitespace-nowrap">
             First Column:
           </label>
@@ -273,7 +179,9 @@ const BivariateStats: FunctionComponent = (): ReactElement => {
             id="first-column-select"
             className="flex-1 p-2 rounded border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-mono"
             value={firstColumn || ''}
-            onChange={(e) => setFirstColumn(e.target.value)}
+            onChange={(e) => {setFirstColumn(e.target.value);
+              setSecondColumn(''); 
+            }}
           >
             <option value="">Select column</option>
             {columns.map((column: string, index: number) => (
@@ -292,64 +200,26 @@ const BivariateStats: FunctionComponent = (): ReactElement => {
             id="second-column-select"
             className="flex-1 p-2 rounded border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-mono"
             value={secondColumn || ''}
+            disabled={!firstColumn} 
             onChange={(e) => setSecondColumn(e.target.value)}
           >
             <option value="">Select column</option>
-            {columns.map((column: string, index: number) => (
+            {columns
+            .filter((column: string) => column !== firstColumn)
+            .map((column: string, index: number) => (
               <option key={`second-${index}`} value={column}>
                 {column}
               </option>
             ))}
           </select>
         </div>
+        </div>
       </div>
-      
-      {/* Iteration Speed Control */}
-      {isIterating && (
-        <div className="mb-4">
-          <div className="flex items-center gap-3">
-            <label htmlFor="iteration-speed" className="text-sm font-mono whitespace-nowrap">
-              Iteration Speed:
-            </label>
-            <input
-              id="iteration-speed"
-              type="range"
-              min="500"
-              max="10000"
-              step="500"
-              value={iterationSpeed}
-              onChange={(e) => setIterationSpeed(Number(e.target.value))}
-              className="flex-1 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer"
-            />
-            <span className="text-sm font-mono whitespace-nowrap">
-              {(iterationSpeed / 1000).toFixed(1)}s
-            </span>
-          </div>
-        </div>
-      )}
-      
-      {/* Relationship type information */}
-      {relationshipType && (
-        <div className="mb-4">
-          <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 p-3 rounded-md text-sm font-mono">
-            {relationshipType === 'numeric-numeric' && 'Analyzing relationship between two numeric columns'}
-            {relationshipType === 'numeric-categorical' && 'Analyzing numeric column by categorical groups'}
-            {relationshipType === 'categorical-numeric' && 'Analyzing numeric column by categorical groups'}
-            {relationshipType === 'categorical-categorical' && 'Analyzing relationship between two categorical columns'}
-          </div>
-        </div>
-      )}
       
       {/* Error states */}
       {(!firstColumn || !secondColumn) && (
-        <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300 rounded-md">
-          Please select two columns to analyze their relationship.
-        </div>
-      )}
-      
-      {(firstColumnStats?.error || secondColumnStats?.error) && (
-        <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md">
-          Unable to analyze one or both selected columns. Please check the data format.
+        <div className="p-10 text-center text-lg space-x-1 text-zinc-500 dark:text-zinc-400">
+          Please select the columns to view statistics and visualizations.
         </div>
       )}
       

@@ -87,7 +87,7 @@ const ContourPlot: FunctionComponent<ContourPlotProps> = ({
       x: validXValues,
       y: validYValues,
       type: 'histogram2dcontour',
-      colorscale: colorscale,
+      // colorscale: colorscale,
       contours: {
         showlabels: true,
         labelfont: {
@@ -108,18 +108,13 @@ const ContourPlot: FunctionComponent<ContourPlotProps> = ({
       hovertemplate: 'Density: %{z}<extra></extra>',
       showscale: true,
       colorbar: {
-        title: {
-          text: 'Density',
-          font: {
-            family: 'monospace',
-            size: 12,
-            color: textColor
-          }
-        },
+        title: 'Density',
         tickfont: {
           family: 'monospace',
           size: 10,
-          color: textColor
+          color: textColor,
+          shadow: 'rgba(0, 0, 0, 0.5)',
+          weight: 2
         }
       },
       ncontours: 12,

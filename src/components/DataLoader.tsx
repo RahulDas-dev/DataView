@@ -9,7 +9,9 @@ import SettingsDialog from './SettingsDialog';
 import { validateFile, validateUrl } from '../utility/FileUtility';
 import { dataLoaderReducer, init_state, ActionType } from '../utility/dataLoaderReducer';
 import useSettings from '../hooks/useSettings';
-import { Data } from 'plotly.js-dist-min';
+import { ParseConfig } from 'papaparse';
+import { DataFrame, readCSV, readExcel, readJSON } from 'danfojs';
+
 
 const DataLoader: FunctionComponent = (): ReactElement => {
   //const file_browser_ref = useRef<HTMLInputElement>(null);
@@ -34,7 +36,7 @@ const DataLoader: FunctionComponent = (): ReactElement => {
   const handleFileChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
         
-        const validationErr_ = validateFile(e.target.files[0]);
+        const validationErr_ = validateFile(e.target.files[0], settings.allowedFileExtensions);
         if (validationErr_) {
           dispatch({ 
             type: ActionType.PROCESS_ERROR, 
@@ -85,7 +87,7 @@ const DataLoader: FunctionComponent = (): ReactElement => {
   const processFile = useCallback(async () => {
     dispatch({ type: ActionType.PROCESS_START });
     
-    const validationErr_ = validateFile(fileInput);
+    const validationErr_ = validateFile(fileInput, settings.allowedFileExtensions);
     if (validationErr_) {
       dispatch({ 
         type: ActionType.PROCESS_ERROR, 
@@ -105,18 +107,18 @@ const DataLoader: FunctionComponent = (): ReactElement => {
         type: ActionType.PROCESS_LOADING, 
         payload: { status: 'Parsing CSV data...' } 
       });
-      const fileUrl = URL.createObjectURL(fileInput!);
-      const { DataFrame , readCSV, readExcel , readJSON } = await import('danfojs')
+      // const fileUrl = URL.createObjectURL(fileInput!);
+      // const { readCSV, readExcel, readJSON, DataFrame } = await import('danfojs');
       let df = new DataFrame();
       if ( is_csv) {
-        df = await readCSV(fileUrl, {worker: true})
+        df = await readCSV(fileInput, {worker: true, delimiter: settings.columnsSpererator}  as ParseConfig)
       } else if (is_xlsx) {
-        df = await readExcel(fileUrl, {worker: true} )
+        df = await readExcel(fileInput) as DataFrame;
       }  else if (is_json) {
-        df = await readJSON(fileUrl, {worker: true} )
+        df = await readJSON(fileInput ) as DataFrame;
       }
       else{
-        df = await readCSV(fileUrl, {worker: true} )
+        df = await readCSV(fileUrl, {worker: true} as ParseConfig )
       }
       if (!df || df.isEmpty || df.shape[0] === 0) {
         dispatch({
@@ -136,7 +138,7 @@ const DataLoader: FunctionComponent = (): ReactElement => {
         payload: { error: new Error(`Error processing file: ${error instanceof Error ? error.message : String(error)}`) }
       });
     }
-  }, [settings, fileInput, setDataFrame]);
+  }, [fileInput, settings, setDataFrame]);
 
   const processUrl = useCallback(async () => {
     dispatch({ type: ActionType.PROCESS_START });
@@ -155,7 +157,6 @@ const DataLoader: FunctionComponent = (): ReactElement => {
         type: ActionType.PROCESS_LOADING, 
         payload: { status: 'Fetching data from URL...' } 
       });
-      const { readCSV } = await import('danfojs');
       const df = await readCSV(fileUrl);
       if (!df || df.isEmpty || df.shape[0] === 0) {
         dispatch({

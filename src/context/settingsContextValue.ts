@@ -6,6 +6,7 @@ export interface Settings {
   maxColsToShow: number;
   columnsWidth: number;
   columnsSpererator: string;
+  allowedFileExtensions: string[];
 }
 
 // Get default settings from environment variables with fallbacks
@@ -15,12 +16,14 @@ export const getDefaultSettings = (): Settings => {
   const maxColsToShowEnv = import.meta.env.VITE_MAX_COLS_TO_SHOW || '8';
   const columnsWidthEnv = import.meta.env.VITE_COLUMNS_WIDTH || '150';
   const columnsSpereratorEnv = import.meta.env.VITE_COLUMNS_SPERERATOR || ',';
+  const allowedFileExtensionsEnv = import.meta.env.VITE_ALLOWED_FILE_EXTENSIONS || 'csv,tsv,xls,xlsx,json';
 
   return {
     rowsPerPage: parseInt(rowsPerPageEnv, 10),
     maxColsToShow: parseInt(maxColsToShowEnv, 10),
     columnsWidth: parseInt(columnsWidthEnv, 150),
     columnsSpererator: columnsSpereratorEnv,
+    allowedFileExtensions: allowedFileExtensionsEnv.split(',').map(ext => ext.trim()),
   };
 };
 

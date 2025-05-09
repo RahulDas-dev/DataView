@@ -4,7 +4,7 @@ import DataLoader from './DataLoader';
 import DataSummary from './DataSummary';
 import DataTable from './DataTable';
 import UnivariateStats from './UnivariateStats';
-/* import BivariateStats from './BivariateStats'; */
+import BivariateStats from './BivariateStats';
 
 const Appbody: FunctionComponent = (): ReactElement => {
   const { dataFrame } = useData();
@@ -25,20 +25,16 @@ const Appbody: FunctionComponent = (): ReactElement => {
   return (
     <div className="app-body container">
       <div className="mt-20 text-justify">
+        <br /><br /><br /><br />
         <h1 className="text-xl text-center mb-2 font-['Montserrat'] font-semibold">Welcome to DataView App!</h1>
-        <h3 className="mb-10 text-center font-['Montserrat']">Explore, Modify, Analyze Data...</h3>
-        <ul className="pl-8 tracking-wide list-disc text-sm space-y-1 font-['Montserrat']">
-          <li>Effortless Data Loading - Instantly load data from any URL or CSV file</li>
-          <li>Intuitive Modification - Easily tweak and tailor your data to your exact specifications.</li>
-          <li>Comprehensive Statistics - Dive deep into a variety of statistics generated from your customized data.</li>
-          <li>Empowerment Through Data - Harness the power of easy data manipulation for enhanced productivity.</li>
-        </ul>
+        <h3 className="mb-10 text-center font-['Montserrat']">Explore, Modify, Analyze Data ...</h3>
+        <br />
       </div>
       <DataLoader />
       {is_table_populated && <DataTable />}
       {is_table_populated && <DataSummary />}
       {is_table_populated && <UnivariateStats />}
-      {/* {is_table_populated && <BivariateStats />} */}
+      {is_table_populated && <BivariateStats />} 
     </div>
   );
 };
