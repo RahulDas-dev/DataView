@@ -3,23 +3,24 @@ import Plotly from 'plotly.js-dist-min';
 import { useTheme } from '../../hooks/useTheme';
 import { DataFrame } from 'danfojs';
 import { getChartColors, getPlotlyConfig, getBaseLayout } from './PlotConfigs';
+import { computeKDE } from '../../utility/plotUtils';
 
-interface CategoryDensityPlotProps {
+interface BiVariateKDEPlotProps {
   categoricalColumnName: string;
   numericColumnName: string;
   dataFrame: DataFrame | null;
-  maxBins?: number; // Maximum number of bins for the histogram
+  bandwidth?: number | 'silverman' | 'scott'; // Control smoothness of KDE
 }
 
 /**
- * A component that renders density plots grouped by categories, showing
- * the distribution of a numeric variable for each category.
+ * A component that renders KDE (Kernel Density Estimation) plots grouped by categories,
+ * showing the distribution of a numeric variable for each category with a common x-axis.
  */
-const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
+const BiVariateKDEPlot: FunctionComponent<BiVariateKDEPlotProps> = ({
   categoricalColumnName,
   numericColumnName,
   dataFrame,
-  maxBins = 30 // Default to 50 bins
+  bandwidth = 'silverman'
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const { isDark } = useTheme();
@@ -57,9 +58,10 @@ const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
           if (filteredDf && filteredDf.shape[0] >= 5) {
             // Extract numeric values for this category
             const values = filteredDf[numericColumnName].dropNa().values || [];
-            // Filter out invalid values
+            // Filter out invalid values and convert to numbers
+            
             if (values.length >= 5) {
-              valuesByCategory[category] = values as number[];
+              valuesByCategory[category] = values;
               foundEnoughData = true;
             }
           }
@@ -77,6 +79,9 @@ const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
       setHasEnoughData(false);
     }
   }, [dataFrame, categoricalColumnName, numericColumnName]);
+  
+  // Compute KDE for a set of values
+  
   
   // Main rendering useEffect
   useEffect(() => {
@@ -134,7 +139,7 @@ const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
     const xmin = minValue - range * 0.05;
     const xmax = maxValue + range * 0.05;
 
-    // Generate KDE for each category
+    // Generate traces for each category
     let categoryIndex = 0;
     for (const category of categories) {
       const values = numericValues[category];
@@ -144,35 +149,33 @@ const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
         continue;
       }
       
-      // Generate a KDE representation using a histogram with density normalization
+      // Generate KDE points
+      const kdeData = computeKDE(values, bandwidth, xmin, xmax);
+      
+      // Create a line+area plot for KDE visualization
       const trace = {
-        type: 'histogram',
-        x: values,
+        type: 'scatter',
+        x: kdeData.x,
+        y: kdeData.y,
+        mode: 'lines',
         name: category.toString(),
-        histnorm: 'probability density',
-        marker: {
+        line: {
           color: colorPalette[categoryIndex % colorPalette.length],
-          line: {
-            color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-            width: 0.5
-          }
+          width: 2
         },
-        opacity: 0.7,
-        xbins: {
-          start: xmin,
-          end: xmax,
-          size: range / Math.min(maxBins, Math.max(10, Math.sqrt(values.length)))
-        },
+        fill: 'tozeroy',
+        opacity: 0.3,
+        fillcolor: colorPalette[categoryIndex % colorPalette.length].replace('rgb', 'rgba').replace(')', ', 0.7)'),
+        hoverinfo: 'x+y+name',
         hovertemplate: `${categoricalColumnName}: ${category}<br>${numericColumnName}: %{x}<br>Density: %{y}<extra></extra>`
       } as Plotly.Data;
-              
       
       traces.push(trace);
       categoryIndex++;
     }
 
     if (traces.length === 0) {
-      chartDiv.innerHTML = '<div class="p-4 text-zinc-500 dark:text-zinc-400 font-mono text-sm">No valid data to display density plots.</div>';
+      chartDiv.innerHTML = '<div class="p-4 text-zinc-500 dark:text-zinc-400 font-mono text-sm">No valid data to display KDE plots.</div>';
       return;
     }
 
@@ -185,10 +188,10 @@ const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
     );
     
     // Create layout with component-specific customizations
-    const layout: Partial<Plotly.Layout> = {
+    const layout = {
       ...baseLayout,
       title: {
-        text: `Density Plot by ${categoricalColumnName}: ${numericColumnName}`,
+        text: `KDE Plot by ${categoricalColumnName}: ${numericColumnName}`,
         font: {
           family: "'Montserrat', sans-serif",
           size: 16
@@ -199,8 +202,34 @@ const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
       xaxis: {
         ...baseLayout.xaxis,
         range: [xmin, xmax],
+        showgrid: true,
+        gridcolor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+        gridwidth: 1,
+        zeroline: true,
+        title: {
+          text: numericColumnName,
+          font: {
+            family: 'monospace',
+            size: 12
+          }
+        }
       },
-      barmode: 'overlay',
+      yaxis: {
+        ...baseLayout.yaxis,
+        showgrid: true,
+        gridcolor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+        gridwidth: 1,
+        zeroline: true,
+        zerolinecolor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+        zerolinewidth: 1,
+        title: {
+          text: 'Density',
+          font: {
+            family: 'monospace',
+            size: 12
+          }
+        }
+      },
       height: 450,
       margin: {
         l: 60,
@@ -217,11 +246,10 @@ const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
         bordercolor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
         borderwidth: 1,
       },
-      bargap: 0.05,
-    };
+    } as Partial<Plotly.Layout>;
 
     // Get standard Plotly config
-    const config = getPlotlyConfig(`density_${categoricalColumnName}_${numericColumnName}`);
+    const config = getPlotlyConfig(`kde_${categoricalColumnName}_${numericColumnName}`);
 
     // Make the plot responsive
     const handleResize = () => {
@@ -240,9 +268,9 @@ const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
           window.addEventListener('resize', handleResize);
         }
       } catch (err) {
-        console.error('Error rendering density plot:', err);
+        console.error('Error rendering KDE plot:', err);
         if (chartDiv) {
-          chartDiv.innerHTML = '<div class="p-4 text-red-500 font-mono text-sm">Error rendering density plot</div>';
+          chartDiv.innerHTML = '<div class="p-4 text-red-500 font-mono text-sm">Error rendering KDE plot</div>';
         }
       }
     }, 50);
@@ -255,23 +283,23 @@ const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
         try {
           Plotly.purge(chartDiv);
         } catch (err) {
-          console.error('Error cleaning up density plot:', err);
+          console.error('Error cleaning up KDE plot:', err);
         }
       }
     };
-  }, [categories, numericValues, hasEnoughData, categoricalColumnName, numericColumnName, isDark]);
+  }, [categories, numericValues, hasEnoughData, categoricalColumnName, numericColumnName, isDark, bandwidth]);
 
   return (
     <div className="w-full">
       <div
         ref={chartContainerRef}
         className="w-full h-[450px] min-h-[300px]"
-        data-testid="category-density-plot"
+        data-testid="bivariate-kde-plot"
       >
         <div className="h-full w-full flex items-center justify-center">
           <div className="animate-pulse text-zinc-400 font-mono text-sm">
             {categories.length > 0 && !hasEnoughData
-              ? "Insufficient data for density plots. Need at least 5 points per category."
+              ? "Insufficient data for KDE plots. Need at least 5 points per category."
               : "Loading visualization..."}
           </div>
         </div>
@@ -280,4 +308,4 @@ const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
   );
 };
 
-export default CategoryDensityPlot;
+export default BiVariateKDEPlot;

@@ -7,6 +7,8 @@ import GroupedCountPlot from './charts/GroupedCountPlot';
 import CategoryDensityPlot from './charts/CategoryDensityPlot';
 import HeatmapPlot from './charts/HeatmapPlot';
 import useColumnStats from '../hooks/useColumnStats';
+import BiKDEPlot from './charts/BiVariateKDEPlot';
+import BiVariateBoxplot from './charts/BiVarBoxplpt';
 
 /**
  * Component for bivariate analysis between two columns, offering different
@@ -103,40 +105,42 @@ const BivariateStats: FunctionComponent = (): ReactElement => {
   const numericCategoricalTabs = useMemo(() => {
     const numericColumn = relationshipType === 'numeric-categorical' ? firstColumn : secondColumn;
     const categoricalColumn = relationshipType === 'numeric-categorical' ? secondColumn : firstColumn;
-    const numericValues = relationshipType === 'numeric-categorical' ? 
-                          firstColumnValues as number[] : 
-                          secondColumnValues as number[];
-    const categoricalValues = relationshipType === 'numeric-categorical' ? 
-                             secondColumnValues as string[] : 
-                             firstColumnValues as string[];
     
     return [
-      {
-        id: 'groupedcount',
-        label: 'Grouped Count Plot',
-        content: (
-          <GroupedCountPlot
-            xColumnName={numericColumn || ''}
-            yColumnName={categoricalColumn || ''}
-            xValues={numericValues}
-            yValues={categoricalValues}
-          />
-        )
-      },
+
       {
         id: 'groupeddensity',
-        label: 'Category Density Plot',
+        label: 'Histogram Plot',
         content: (
           <CategoryDensityPlot
             numericColumnName={numericColumn || ''}
             categoricalColumnName={categoricalColumn || ''}
-            numericValues={numericValues}
-            categoricalValues={categoricalValues}
+            dataFrame={dataFrame}
+          />
+        )
+      },{
+        id: 'kdedensity',
+        label: 'Density Plot',
+        content: (
+          <BiKDEPlot
+            numericColumnName={numericColumn || ''}
+            categoricalColumnName={categoricalColumn || ''}
+            dataFrame={dataFrame}
+          />
+        )
+      },{
+        id: 'box plot',
+        label: 'Box Plot',
+        content: (
+          <BiVariateBoxplot
+            numericColumnName={numericColumn || ''}
+            categoricalColumnName={categoricalColumn || ''}
+            dataFrame={dataFrame}
           />
         )
       }
     ];
-  }, [relationshipType, firstColumn, secondColumn, firstColumnValues, secondColumnValues]);
+  }, [relationshipType, firstColumn, secondColumn, dataFrame]);
   
   const categoricalCategoricalTabs = useMemo(() => [
     {
@@ -150,7 +154,19 @@ const BivariateStats: FunctionComponent = (): ReactElement => {
           secondValues={secondColumnValues as string[]}
         />
       )
-    }
+    },
+    {
+        id: 'groupedcount',
+        label: 'Grouped Count Plot',
+        content: (
+          <GroupedCountPlot
+            xColumnName={firstColumn || ''}
+            yColumnName={secondColumn || ''}
+            xValues={firstColumnValues}
+            yValues={secondColumnValues}
+          />
+        )
+      },
   ], [firstColumn, secondColumn, firstColumnValues, secondColumnValues]);
   
   // Get the appropriate tabs based on relationship type

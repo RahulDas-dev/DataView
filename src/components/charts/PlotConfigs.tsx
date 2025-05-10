@@ -190,3 +190,5 @@ export const getBaseLayout = (
     }
   };
 };
+
+// Additional functions to add to PlotConfigs.tsx

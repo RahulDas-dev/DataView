@@ -4,22 +4,24 @@ import { useTheme } from '../../hooks/useTheme';
 import { DataFrame } from 'danfojs';
 import { getChartColors, getPlotlyConfig, getBaseLayout } from './PlotConfigs';
 
-interface CategoryDensityPlotProps {
+interface BiVariateBoxplotProps {
   categoricalColumnName: string;
   numericColumnName: string;
   dataFrame: DataFrame | null;
-  maxBins?: number; // Maximum number of bins for the histogram
+  notched?: boolean;  // Whether to use notched boxplots (confidence intervals on median)
+  showPoints?: 'all' | 'outliers' | 'none';  // Control how points are displayed
 }
 
 /**
- * A component that renders density plots grouped by categories, showing
- * the distribution of a numeric variable for each category.
+ * A component that renders boxplots grouped by categories, showing
+ * the distribution of a numeric variable across different categories.
  */
-const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
+const BiVariateBoxplot: FunctionComponent<BiVariateBoxplotProps> = ({
   categoricalColumnName,
   numericColumnName,
   dataFrame,
-  maxBins = 30 // Default to 50 bins
+  notched = false,
+  showPoints = 'outliers'
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const { isDark } = useTheme();
@@ -57,9 +59,11 @@ const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
           if (filteredDf && filteredDf.shape[0] >= 5) {
             // Extract numeric values for this category
             const values = filteredDf[numericColumnName].dropNa().values || [];
-            // Filter out invalid values
+            // Filter out invalid values and convert to numbers
+            
+              
             if (values.length >= 5) {
-              valuesByCategory[category] = values as number[];
+              valuesByCategory[category] = values;
               foundEnoughData = true;
             }
           }
@@ -115,7 +119,7 @@ const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
     // Create traces for each category
     const traces: Plotly.Data[] = [];
     
-    // Find overall min/max for x-axis scaling
+    // Find overall min/max for y-axis scaling
     let allNumericValues: number[] = [];
     Object.values(numericValues).forEach(values => {
       allNumericValues = allNumericValues.concat(values);
@@ -131,10 +135,26 @@ const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
     const range = maxValue - minValue;
     
     // Add some padding to the range
-    const xmin = minValue - range * 0.05;
-    const xmax = maxValue + range * 0.05;
+    const ymin = minValue - range * 0.05;
+    const ymax = maxValue + range * 0.05;
 
-    // Generate KDE for each category
+    // Determine how points should be rendered
+    let pointsConfiguration: boolean | 'all' | 'outliers' | 'suspectedoutliers' | 'false';
+    switch(showPoints) {
+      case 'all': 
+        pointsConfiguration = 'all'; 
+        break;
+      case 'outliers': 
+        pointsConfiguration = 'outliers'; 
+        break;
+      case 'none': 
+        pointsConfiguration = false; 
+        break;
+      default: 
+        pointsConfiguration = 'outliers';
+    }
+
+    // Generate boxplot for each category
     let categoryIndex = 0;
     for (const category of categories) {
       const values = numericValues[category];
@@ -144,26 +164,27 @@ const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
         continue;
       }
       
-      // Generate a KDE representation using a histogram with density normalization
+      // Create a boxplot trace
       const trace = {
-        type: 'histogram',
-        x: values,
+        type: 'box',
+        y: values,
         name: category.toString(),
-        histnorm: 'probability density',
+        boxmean: true, // Show mean as a dashed line
+        notched: notched, // Show confidence interval for median if true
         marker: {
           color: colorPalette[categoryIndex % colorPalette.length],
+          outliercolor: isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
           line: {
-            color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-            width: 0.5
+            width: 1,
+            color: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'
           }
         },
-        opacity: 0.7,
-        xbins: {
-          start: xmin,
-          end: xmax,
-          size: range / Math.min(maxBins, Math.max(10, Math.sqrt(values.length)))
-        },
-        hovertemplate: `${categoricalColumnName}: ${category}<br>${numericColumnName}: %{x}<br>Density: %{y}<extra></extra>`
+        boxpoints: pointsConfiguration,
+        jitter: 0.3,
+        pointpos: 0,
+        orientation: 'v',
+        hoverinfo: 'y+name',
+        hovertemplate: `${categoricalColumnName}: ${category}<br>${numericColumnName}: %{y}<extra></extra>`
       } as Plotly.Data;
               
       
@@ -172,7 +193,7 @@ const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
     }
 
     if (traces.length === 0) {
-      chartDiv.innerHTML = '<div class="p-4 text-zinc-500 dark:text-zinc-400 font-mono text-sm">No valid data to display density plots.</div>';
+      chartDiv.innerHTML = '<div class="p-4 text-zinc-500 dark:text-zinc-400 font-mono text-sm">No valid data to display boxplots.</div>';
       return;
     }
 
@@ -180,15 +201,15 @@ const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
     const baseLayout = getBaseLayout(
       isDark,
       chartDiv.offsetWidth,
-      numericColumnName,
-      'Density'
+      categoricalColumnName,
+      numericColumnName
     );
     
     // Create layout with component-specific customizations
     const layout: Partial<Plotly.Layout> = {
       ...baseLayout,
       title: {
-        text: `Density Plot by ${categoricalColumnName}: ${numericColumnName}`,
+        text: `Boxplot of ${numericColumnName} by ${categoricalColumnName}`,
         font: {
           family: "'Montserrat', sans-serif",
           size: 16
@@ -196,11 +217,28 @@ const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
         x: 0.05,
         xanchor: 'left'
       },
+      yaxis: {
+        ...baseLayout.yaxis,
+        range: [ymin, ymax],
+        title: {
+          text: numericColumnName,
+          font: {
+            family: 'monospace',
+            size: 12
+          }
+        }
+      },
       xaxis: {
         ...baseLayout.xaxis,
-        range: [xmin, xmax],
+        title: {
+          text: categoricalColumnName,
+          font: {
+            family: 'monospace',
+            size: 12
+          }
+        }
       },
-      barmode: 'overlay',
+      boxmode: 'group',
       height: 450,
       margin: {
         l: 60,
@@ -217,11 +255,10 @@ const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
         bordercolor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
         borderwidth: 1,
       },
-      bargap: 0.05,
     };
 
     // Get standard Plotly config
-    const config = getPlotlyConfig(`density_${categoricalColumnName}_${numericColumnName}`);
+    const config = getPlotlyConfig(`boxplot_${categoricalColumnName}_${numericColumnName}`);
 
     // Make the plot responsive
     const handleResize = () => {
@@ -240,9 +277,9 @@ const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
           window.addEventListener('resize', handleResize);
         }
       } catch (err) {
-        console.error('Error rendering density plot:', err);
+        console.error('Error rendering boxplot:', err);
         if (chartDiv) {
-          chartDiv.innerHTML = '<div class="p-4 text-red-500 font-mono text-sm">Error rendering density plot</div>';
+          chartDiv.innerHTML = '<div class="p-4 text-red-500 font-mono text-sm">Error rendering boxplot</div>';
         }
       }
     }, 50);
@@ -255,23 +292,23 @@ const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
         try {
           Plotly.purge(chartDiv);
         } catch (err) {
-          console.error('Error cleaning up density plot:', err);
+          console.error('Error cleaning up boxplot:', err);
         }
       }
     };
-  }, [categories, numericValues, hasEnoughData, categoricalColumnName, numericColumnName, isDark]);
+  }, [categories, numericValues, hasEnoughData, categoricalColumnName, numericColumnName, isDark, notched, showPoints]);
 
   return (
     <div className="w-full">
       <div
         ref={chartContainerRef}
         className="w-full h-[450px] min-h-[300px]"
-        data-testid="category-density-plot"
+        data-testid="bivariate-boxplot"
       >
         <div className="h-full w-full flex items-center justify-center">
           <div className="animate-pulse text-zinc-400 font-mono text-sm">
             {categories.length > 0 && !hasEnoughData
-              ? "Insufficient data for density plots. Need at least 5 points per category."
+              ? "Insufficient data for boxplots. Need at least 5 points per category."
               : "Loading visualization..."}
           </div>
         </div>
@@ -280,4 +317,4 @@ const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
   );
 };
 
-export default CategoryDensityPlot;
+export default BiVariateBoxplot;

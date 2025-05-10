@@ -37,7 +37,7 @@ const ContourPlot: FunctionComponent<ContourPlotProps> = ({
     const textColor = isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)';
     const paper_bgcolor = isDark ? '#27272a' : '#f9fafb'; // zinc-800 for dark, gray-50 for light
     const plot_bgcolor = isDark ? '#27272a' : '#f9fafb';
-    const colorscale = [
+    /* const colorscale = [
       [0, isDark ? 'rgba(39, 39, 42, 1)' : 'rgba(255, 255, 255, 1)'],
       [0.1, isDark ? 'rgba(49, 46, 129, 0.5)' : 'rgba(238, 242, 255, 1)'],
       [0.3, isDark ? 'rgba(67, 56, 202, 0.7)' : 'rgba(199, 210, 254, 1)'],
@@ -45,7 +45,7 @@ const ContourPlot: FunctionComponent<ContourPlotProps> = ({
       [0.7, isDark ? 'rgba(124, 58, 237, 0.9)' : 'rgba(139, 92, 246, 1)'],
       [0.9, isDark ? 'rgba(147, 51, 234, 1)' : 'rgba(124, 58, 237, 1)'],
       [1, isDark ? 'rgba(192, 38, 211, 1)' : 'rgba(107, 33, 168, 1)']
-    ];
+    ]; */
 
     // Create paired dataset, filtering out nulls or NaNs
     const validPairs = [];
