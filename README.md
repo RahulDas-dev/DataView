@@ -121,4 +121,5 @@ The app features a comprehensive dark/light theme implementation:
 
 
 
-
+## Publish
+git subtree push --prefix build origin gh-pages
