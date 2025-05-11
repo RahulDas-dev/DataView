@@ -259,7 +259,7 @@ const CategoryDensityPlot: FunctionComponent<CategoryDensityPlotProps> = ({
         }
       }
     };
-  }, [categories, numericValues, hasEnoughData, categoricalColumnName, numericColumnName, isDark]);
+  }, [categories, numericValues, hasEnoughData, categoricalColumnName, numericColumnName,maxBins, isDark]);
 
   return (
     <div className="w-full">

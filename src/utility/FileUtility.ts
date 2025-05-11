@@ -15,7 +15,7 @@ export const validateUrl = (url: string, allowedExtensions: string[]): string =>
       return 'URL must use http or https protocol';
     }
     const fileName = url.toLowerCase().toLowerCase();
-    const isValid = allowedExtensions.some(ext => fileName.endsWith(ext));
+    const isValid = allowedExtensions.some((ext) => fileName.endsWith(ext));
     if (!isValid) {
       return 'Selected file must be a CSV, XLS, XLSX, or JSON file';
     }
@@ -32,7 +32,7 @@ export const validateFile = (file: File | null, allowedExtensions: string[]): st
   }
   // Allow .csv, .xls, .xlsx, .json extensions
   const fileName = file.name.toLowerCase();
-  const isValid = allowedExtensions.some(ext => fileName.endsWith(ext));
+  const isValid = allowedExtensions.some((ext) => fileName.endsWith(ext));
   if (!isValid) {
     return 'Selected file must be a CSV, XLS, XLSX, or JSON file';
   }

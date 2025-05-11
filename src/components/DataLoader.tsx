@@ -138,7 +138,7 @@ const DataLoader: FunctionComponent = (): ReactElement => {
         payload: { error: new Error(`Error processing file: ${error instanceof Error ? error.message : String(error)}`) }
       });
     }
-  }, [fileInput, settings.allowedFileExtensions, setDataFrame]);
+  }, [fileInput,fileUrl, settings, setDataFrame]);
 
   const processUrl = useCallback(async () => {
     dispatch({ type: ActionType.PROCESS_START });
