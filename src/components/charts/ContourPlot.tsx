@@ -228,7 +228,7 @@ const ContourPlot: FunctionComponent<ContourPlotProps> = ({
         t: 40,
         b: 60
       },
-      height: 450,
+      height: 500,
       width: chartDiv.offsetWidth,
       autosize: false,
       showlegend: false,

@@ -2,10 +2,11 @@ import { FunctionComponent, useEffect, useRef } from 'react';
 import Plotly from 'plotly.js-dist-min';
 import { useTheme } from '../../hooks/useTheme';
 import { getChartColors, getPlotlyConfig, getBaseLayout } from './PlotConfigs';
+import { useData } from '../../hooks/useData';
+import { Series } from 'danfojs';
 
 interface PieChartProps {
-  columnName: string;
-  categoryValues: string[];
+  columnName: string| null;
   maxCategories?: number; // Maximum number of categories to display
 }
 
@@ -15,14 +16,14 @@ interface PieChartProps {
  */
 const PieChart: FunctionComponent<PieChartProps> = ({
   columnName,
-  categoryValues,
-  maxCategories = 10 // Default to showing top 10 categories
+  maxCategories = 30 // Default to showing top 10 categories
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const { isDark } = useTheme();
-
+  const { dataFrame } = useData();
+  
   useEffect(() => {
-    if (!chartContainerRef.current || !categoryValues.length) {
+    if (!chartContainerRef.current || !dataFrame|| dataFrame.isEmpty || dataFrame.shape[0]==0 ||!columnName) {
       return;
     }
 
@@ -35,40 +36,26 @@ const PieChart: FunctionComponent<PieChartProps> = ({
     // Get theme colors
     const colors = getChartColors(isDark);
 
-    // Filter out null or empty values
-    const validValues = categoryValues.filter(val => val !== null && val !== undefined && val !== '');
-
+    const cleanDf: Series = dataFrame[columnName].dropNa()
+    // Filter out null or NaN values for valid calculations
+    const validValues = cleanDf.values as (number| string| boolean) [];
+        
     if (validValues.length === 0) {
       chartDiv.innerHTML = '<div class="p-4 text-zinc-500 dark:text-zinc-400 font-mono text-sm">No valid categorical data to display</div>';
       return;
     }
+    const valueCounts = cleanDf.valueCounts().sortValues({ ascending: false });
+    const categories = valueCounts.index.map((x:string| number| symbol)=> String(x)) as string[];
+    const counts = valueCounts.values as number[];
 
-    // Count frequencies of each category
-    const frequencyMap = validValues.reduce((acc, val) => {
-      acc[val] = (acc[val] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    // Convert to array and sort by frequency (descending)
-    const sortedCategories = Object.entries(frequencyMap)
-      .sort((a, b) => b[1] - a[1]);
-
-    const displayCategories = sortedCategories.slice(0, maxCategories);
-    let hasOtherCategory = false;
+    // Combine into a single object
+    const categories2bdispalyed = Math.min(categories.length, maxCategories);
+    const hasOtherCategory = categories.length < maxCategories;
     
-    // If there are more categories than maxCategories, create an "Other" category
-    if (sortedCategories.length > maxCategories) {
-      hasOtherCategory = true;
-      const otherCount = sortedCategories
-        .slice(maxCategories)
-        .reduce((sum, [, count]) => sum + count, 0);
-      
-      displayCategories.push(['Other', otherCount]);
-    }
-
+    
     // Extract categories and counts for the plot
-    const labels = displayCategories.map(([category]) => category);
-    const values = displayCategories.map(([, count]) => count);
+    const labels = categories.slice(0, categories2bdispalyed);
+    const values = counts.slice(0, categories2bdispalyed);
 
     // Create trace for the pie chart
     const pieTrace: Plotly.Data = {
@@ -180,7 +167,7 @@ const PieChart: FunctionComponent<PieChartProps> = ({
         }
       }
     };
-  }, [categoryValues, columnName, maxCategories, isDark]);
+  }, [dataFrame, columnName, maxCategories, isDark]);
 
   return (
     <div className="w-full">

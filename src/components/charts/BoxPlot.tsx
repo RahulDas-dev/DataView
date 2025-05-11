@@ -2,10 +2,11 @@ import { FunctionComponent, useEffect, useRef } from 'react';
 import Plotly from 'plotly.js-dist-min';
 import { useTheme } from '../../hooks/useTheme';
 import { getChartColors, getPlotlyConfig, getBaseLayout } from './PlotConfigs';
+import { useData } from '../../hooks/useData';
+import { Series } from 'danfojs';
 
 interface BoxPlotProps {
-  columnName: string;
-  columnValues: Array<number>;
+  columnName: string| null;
 }
 
 /**
@@ -14,15 +15,16 @@ interface BoxPlotProps {
  */
 const BoxPlot: FunctionComponent<BoxPlotProps> = ({
   columnName,
-  columnValues
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const { isDark } = useTheme();
+  const { dataFrame } = useData();
 
   useEffect(() => {
-    if (!chartContainerRef.current || !columnValues.length) {
+   if (!chartContainerRef.current || !dataFrame|| dataFrame.isEmpty || dataFrame.shape[0]==0 ||!columnName) {
       return;
     }
+
 
     // Store the current value of the ref in a variable to use in cleanup
     const chartDiv = chartContainerRef.current;
@@ -33,8 +35,9 @@ const BoxPlot: FunctionComponent<BoxPlotProps> = ({
     // Get theme colors
     const colors = getChartColors(isDark);
 
+    const cleanDf: Series = dataFrame[columnName].dropNa()
     // Filter out null or NaN values for valid calculations
-    const validValues = columnValues.filter(val => val !== null && !isNaN(Number(val)));
+    const validValues = cleanDf.values as number[];
 
     if (validValues.length === 0) {
       chartDiv.innerHTML = '<div class="p-4 text-zinc-500 dark:text-zinc-400 font-mono text-sm">No valid numerical data to display</div>';
@@ -45,7 +48,7 @@ const BoxPlot: FunctionComponent<BoxPlotProps> = ({
     // Update the boxTrace object with better outlier styling
     const boxTrace: Plotly.Data = {
       type: 'box',
-      y: validValues,
+      x: validValues,
       name: columnName,
       boxmean: true, // Show mean as a dashed line
       marker: {
@@ -54,10 +57,6 @@ const BoxPlot: FunctionComponent<BoxPlotProps> = ({
         outliercolor: isDark ? 'rgba(244, 244, 245, 0.95)' : 'rgba(0, 0, 27, 0)', // zinc-100/zinc-900 for outliers
         size: 6,
         opacity: 0.8,
-        /* line: {
-          color: isDark ? 'rgba(212, 212, 216, 0.9)' : 'rgba(39, 39, 42, 0.9)', // zinc-300/zinc-800
-          width: 1
-        } */
       },
       line: {
         color: isDark ? 'rgba(244, 244, 245, 0.9)' : 'rgba(63, 63, 70, 0.9)', // zinc-100/zinc-700
@@ -75,33 +74,37 @@ const BoxPlot: FunctionComponent<BoxPlotProps> = ({
     // Create layout using shared base layout
     const layout: Partial<Plotly.Layout> = {
       ...getBaseLayout(isDark, chartDiv.offsetWidth, '', columnName),
-
       xaxis: {
+        title: {
+          text: columnName,
+          font: {
+            family: 'Montserrat, sans-serif',
+            size: 14,
+            color: isDark ? 'rgba(244, 244, 245, 0.9)' : 'rgba(63, 63, 70, 0.9)'
+          }
+        },
+        showgrid: true,
+        gridcolor: isDark ? 'rgba(113, 113, 122, 0.2)' : 'rgba(212, 212, 216, 0.5)', // zinc-500/zinc-300
+        zeroline: false,
+        zerolinecolor: isDark ? 'rgba(161, 161, 170, 0.5)' : 'rgba(82, 82, 91, 0.5)', // zinc-400/zinc-600
+        showticklabels: true,
+        tickfont: {
+          family: 'monospace',
+          size: 11,
+          color: isDark ? 'rgba(212, 212, 216, 0.9)' : 'rgba(63, 63, 70, 0.9)' // zinc-300/zinc-700
+        }
+      },
+      yaxis: {
         showticklabels: false,
         zeroline: false
       },
       margin: {
-        l: 50,
+        l: 20,
         r: 10,
         t: 40,
-        b: 20
+        b: 50
       },
       showlegend: false,
-      /* annotations: [
-        {
-          x: 0,
-          y: 1.12,
-          xref: 'paper',
-          yref: 'paper',
-          text: 'Outliers shown in lighter color',
-          showarrow: false,
-          font: {
-            family: 'monospace',
-            size: 10,
-            color: colors.textColor
-          }
-        }
-      ] */
     };
 
     // Get standard Plotly config with customized filename
@@ -148,7 +151,7 @@ const BoxPlot: FunctionComponent<BoxPlotProps> = ({
         }
       }
     };
-  }, [columnValues, columnName, isDark]);
+  }, [dataFrame, columnName, isDark]);
 
   return (
     <div className="w-full">

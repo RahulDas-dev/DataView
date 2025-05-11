@@ -16,14 +16,15 @@ export const getDefaultSettings = (): Settings => {
   const maxColsToShowEnv = import.meta.env.VITE_MAX_COLS_TO_SHOW || '8';
   const columnsWidthEnv = import.meta.env.VITE_COLUMNS_WIDTH || '150';
   const columnsSpereratorEnv = import.meta.env.VITE_COLUMNS_SPERERATOR || ',';
-  const allowedFileExtensionsEnv = import.meta.env.VITE_ALLOWED_FILE_EXTENSIONS || 'csv,tsv,xls,xlsx,json';
+  const allowedFileExtensionsEnv =
+    import.meta.env.VITE_ALLOWED_FILE_EXTENSIONS || 'csv,tsv,xls,xlsx,json';
 
   return {
     rowsPerPage: parseInt(rowsPerPageEnv, 10),
     maxColsToShow: parseInt(maxColsToShowEnv, 10),
     columnsWidth: parseInt(columnsWidthEnv, 150),
     columnsSpererator: columnsSpereratorEnv,
-    allowedFileExtensions: allowedFileExtensionsEnv.split(',').map(ext => ext.trim()),
+    allowedFileExtensions: allowedFileExtensionsEnv.split(',').map((ext) => ext.trim()),
   };
 };
 
@@ -37,6 +38,6 @@ export interface SettingsContextType {
 // Create the context with default values
 export const SettingsContext = createContext<SettingsContextType>({
   settings: getDefaultSettings(),
-  updateSettings: () => { },
-  resetSettings: () => { },
+  updateSettings: () => {},
+  resetSettings: () => {},
 });

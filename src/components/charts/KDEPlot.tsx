@@ -2,11 +2,14 @@ import { FunctionComponent, useEffect, useRef } from 'react';
 import Plotly from 'plotly.js-dist-min';
 import { useTheme } from '../../hooks/useTheme';
 import { getChartColors, getPlotlyConfig, getBaseLayout } from './PlotConfigs';
+import { Series } from 'danfojs';
+import { computeKDE } from '../../utility/plotUtils';
+import { useData } from '../../hooks/useData';
 
 interface KDEPlotProps {
-  columnName: string;
-  columnValues: Array<number>;
-  smoothingFactor?: number; // Controls the bandwidth of the KDE
+  columnName: string| null;
+  bandwidth?: number | 'silverman' | 'scott'; 
+  binCount?: number; // Optional: size of the bins for the histogram
 }
 
 /**
@@ -15,14 +18,15 @@ interface KDEPlotProps {
  */
 const KDEPlot: FunctionComponent<KDEPlotProps> = ({
   columnName,
-  columnValues,
-  smoothingFactor = 1.0 // Default smoothing factor
+  bandwidth = 'silverman',
+  binCount = 30
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const { isDark } = useTheme();
+  const { dataFrame } = useData();
 
   useEffect(() => {
-    if (!chartContainerRef.current || !columnValues.length) {
+    if (!chartContainerRef.current || !dataFrame|| dataFrame.isEmpty || dataFrame.shape[0]==0 ||!columnName) {
       return;
     }
 
@@ -34,9 +38,9 @@ const KDEPlot: FunctionComponent<KDEPlotProps> = ({
 
     // Get theme colors
     const colors = getChartColors(isDark);
-
+    const cleanDf: Series = dataFrame[columnName].dropNa()
     // Filter out null or NaN values for valid calculations
-    const validValues = columnValues.filter(val => val !== null && !isNaN(Number(val)));
+    const validValues = cleanDf.values as number[];
 
     if (validValues.length === 0) {
       chartDiv.innerHTML = '<div class="p-4 text-zinc-500 dark:text-zinc-400 font-mono text-sm">No valid numerical data to display</div>';
@@ -44,40 +48,11 @@ const KDEPlot: FunctionComponent<KDEPlotProps> = ({
     }
 
     // Generate KDE (Kernel Density Estimation)
-    const generateKDE = () => {
-      // Sort values for proper KDE calculation
-      const sortedValues = [...validValues].sort((a, b) => a - b);
-      
-      // Find min and max for x-axis range
-      const minValue = Math.min(...sortedValues);
-      const maxValue = Math.max(...sortedValues);
-      
-      // Create x points for the KDE curve (more points for smooth curve)
-      const step = (maxValue - minValue) / 200;
-      const kdeXValues = Array.from({ length: 201 }, (_, i) => minValue + i * step);
-      
-      // Bandwidth (smoothing parameter) - can be adjusted based on data distribution
-      // Scott's rule for bandwidth selection: n^(-1/5) * σ
-      const bandwidth = smoothingFactor * Math.pow(sortedValues.length, -0.2) * 
-                        Math.sqrt(sortedValues.reduce((acc, val) => 
-                            acc + Math.pow(val - (sortedValues.reduce((a, b) => a + b, 0) / sortedValues.length), 2), 0) / sortedValues.length);
-      
-      // Calculate KDE values
-      const kdeYValues = kdeXValues.map(x => {
-        // Gaussian kernel
-        return sortedValues.reduce((sum, val) => {
-          const z = (x - val) / bandwidth;
-          return sum + Math.exp(-0.5 * z * z) / (bandwidth * Math.sqrt(2 * Math.PI));
-        }, 0) / sortedValues.length;
-      });
-      
-      return {
-        x: kdeXValues,
-        y: kdeYValues
-      };
-    };
     
-    const kde = generateKDE();
+    const minValue = cleanDf.min() as number;
+    const maxValue = cleanDf.max() as number;
+    
+    const kde = computeKDE( validValues, bandwidth, minValue, maxValue, true, binCount);
     
     // Create KDE trace
     const kdeTrace: Plotly.Data = {
@@ -176,7 +151,7 @@ const KDEPlot: FunctionComponent<KDEPlotProps> = ({
         }
       }
     };
-  }, [columnValues, columnName, smoothingFactor, isDark]);
+  }, [dataFrame, columnName, bandwidth,binCount, isDark]);
 
   return (
     <div className="w-full">

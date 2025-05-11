@@ -98,7 +98,7 @@ export const getPlotlyConfig = (filename: string): Partial<Plotly.Config> => ({
     'autoScale2d',
     'toggleSpikelines',
     'hoverClosestCartesian',
-    'hoverCompareCartesian'
+    'hoverCompareCartesian',
   ],
   displaylogo: false,
   toImageButtonOptions: {

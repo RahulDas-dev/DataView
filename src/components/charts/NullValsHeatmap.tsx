@@ -1,18 +1,17 @@
 import { FunctionComponent, useCallback, useEffect, useRef, useMemo } from 'react';
 import { DataFrame } from 'danfojs';
 import Plotly from 'plotly.js-dist-min';
+import useTheme from '../../hooks/useTheme';
 
 interface NullValuesHeatmapProps {
   dataFrame: DataFrame | null;
-  darkMode: boolean;
 }
 
 const NullValuesHeatmap: FunctionComponent<NullValuesHeatmapProps> = ({ 
-  dataFrame, 
-  darkMode
+  dataFrame
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
-  
+  const { isDark } = useTheme();
   const generateHeatmapData = useCallback(() => {
     if (!dataFrame || dataFrame.isEmpty || !dataFrame.shape || dataFrame.shape[0] === 0) {
       return null;
@@ -51,21 +50,22 @@ const NullValuesHeatmap: FunctionComponent<NullValuesHeatmapProps> = ({
       return;
     }
     
+    const chartDiv = chartContainerRef.current;
+
     const heatmapData = generateHeatmapData();
     if (!heatmapData) {
-      chartContainerRef.current.innerHTML = '';
+      chartDiv.innerHTML = '';
       return;
     }
-    
-    chartContainerRef.current.innerHTML = '';
+    chartDiv.innerHTML = '';
     
     // Use the same explicit background colors as in BarChart
-    const textColor = darkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)';
-    const paper_bgcolor = darkMode ? '#27272a' : '#f9fafb'; // zinc-800 for dark, gray-50 for light
-    const plot_bgcolor = darkMode ? '#27272a' : '#f9fafb';
+    const textColor = isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)';
+    const paper_bgcolor = isDark ? '#27272a' : '#f9fafb'; // zinc-800 for dark, gray-50 for light
+    const plot_bgcolor = isDark ? '#27272a' : '#f9fafb';
     
-    const dataPresent = darkMode ? '#272727' : '#f8f8f8';
-    const dataAbsent = darkMode ? '#f8f8f8':'#353935' ;
+    const dataPresent = isDark ? '#272727' : '#f8f8f8';
+    const dataAbsent = isDark ? '#f8f8f8':'#353935' ;
     
     const data: Plotly.Data[] = [
       {
@@ -156,8 +156,8 @@ const NullValuesHeatmap: FunctionComponent<NullValuesHeatmapProps> = ({
           family: 'monospace',
           size: 10
         },
-        bgcolor: darkMode ? 'rgba(39, 39, 42, 0.7)' : 'rgba(249, 250, 251, 0.7)', // Semi-transparent background matching theme
-        bordercolor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+        bgcolor: isDark ? 'rgba(39, 39, 42, 0.7)' : 'rgba(249, 250, 251, 0.7)', // Semi-transparent background matching theme
+        bordercolor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
         borderwidth: 0,
       }
     };
@@ -166,24 +166,46 @@ const NullValuesHeatmap: FunctionComponent<NullValuesHeatmapProps> = ({
       responsive: true,
       displayModeBar: false
     };
+
+    // Make the plot responsive
+    const handleResize = () => {
+      if (chartDiv) {
+        Plotly.relayout(chartDiv, {
+          'width': chartDiv.offsetWidth
+        });
+      }
+    };
     
-    try {
-      Plotly.newPlot(chartContainerRef.current, data, layout, config);
-    } catch (err) {
-      console.error('Error rendering heatmap:', err);
-      chartContainerRef.current.innerHTML = '<div class="p-4 text-red-500 font-mono text-sm">Error rendering heatmap</div>';
-    }
+    // Add a small delay to ensure the container is fully rendered
+    const timer = setTimeout(() => {
+      try {
+        if (chartDiv) {
+          Plotly.newPlot(chartDiv, data, layout, config);
+          window.addEventListener('resize', handleResize);
+        }
+      } catch (err) {
+        console.error('Error rendering pie chart:', err);
+        if (chartDiv) {
+          chartDiv.innerHTML = '<div class="p-4 text-zinc-500 dark:text-zinc-400 font-mono text-sm">Error rendering pie chart</div>';
+        }
+      }
+    }, 50);
+    
     
     return () => {
-      if (chartContainerRef.current) {
+      clearTimeout(timer);
+      
+      // Remove resize event listener
+      window.removeEventListener('resize', handleResize);
+      if (chartDiv) {
         try {
-          Plotly.purge(chartContainerRef.current);
+          Plotly.purge(chartDiv);
         } catch (err) {
           console.error('Error cleaning up heatmap:', err);
         }
       }
     };
-  }, [generateHeatmapData, darkMode]);
+  }, [generateHeatmapData, isDark]);
   
   const hasNullValues = useMemo(() => {
     if (!dataFrame || dataFrame.isEmpty) return false;

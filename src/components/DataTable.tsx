@@ -184,7 +184,7 @@ const DataTable: FunctionComponent = (): ReactElement => {
         <h2 className="text-xl font-['Montserrat'] ">Data Table</h2>
         <div className="flex gap-2">
           <Button variant="secondary" size="small" onClick={handleOpenRenameDialog}>
-            <AiOutlineEdit  /> Rename Columns
+            <AiOutlineEdit  /> Rename Columns & Change Data Types
           </Button>
           <Button variant="secondary" size="small" onClick={handleExport}>
             <FiDownload /> Export

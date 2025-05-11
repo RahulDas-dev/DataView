@@ -2,10 +2,11 @@ import { FunctionComponent, useEffect, useRef } from 'react';
 import Plotly from 'plotly.js-dist-min';
 import { useTheme } from '../../hooks/useTheme';
 import { getChartColors, getPlotlyConfig, getBaseLayout } from './PlotConfigs';
+import { useData } from '../../hooks/useData';
+import { Series } from 'danfojs';
 
 interface ViolinPlotProps {
-  columnName: string;
-  columnValues: Array<number>;
+  columnName: string| null;
 }
 
 /**
@@ -13,14 +14,14 @@ interface ViolinPlotProps {
  * Shows distribution shape, density, and quartiles in a single visualization.
  */
 const ViolinPlot: FunctionComponent<ViolinPlotProps> = ({
-  columnName,
-  columnValues
+  columnName
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const { isDark } = useTheme();
-
+  const { dataFrame } = useData();
+  
   useEffect(() => {
-    if (!chartContainerRef.current || !columnValues.length) {
+    if (!chartContainerRef.current || !dataFrame|| dataFrame.isEmpty || dataFrame.shape[0]==0 ||!columnName) {
       return;
     }
 
@@ -34,8 +35,10 @@ const ViolinPlot: FunctionComponent<ViolinPlotProps> = ({
     const colors = getChartColors(isDark);
 
     // Filter out null or NaN values for valid calculations
-    const validValues = columnValues.filter(val => val !== null && !isNaN(Number(val)));
-
+    const cleanDf: Series = dataFrame[columnName].dropNa()
+    // Filter out null or NaN values for valid calculations
+    const validValues = cleanDf.values as number[];
+    
     if (validValues.length === 0) {
       chartDiv.innerHTML = '<div class="p-4 text-zinc-500 dark:text-zinc-400 font-mono text-sm">No valid numerical data to display</div>';
       return;
@@ -44,7 +47,7 @@ const ViolinPlot: FunctionComponent<ViolinPlotProps> = ({
     // Create violin plot trace
     const violinTrace: Plotly.Data = {
       type: 'violin',
-      y: validValues,
+      x: validValues,
       name: columnName,
       box: {
         visible: true,
@@ -84,31 +87,34 @@ const ViolinPlot: FunctionComponent<ViolinPlotProps> = ({
     const layout: Partial<Plotly.Layout> = {
       ...getBaseLayout(isDark, chartDiv.offsetWidth, '', columnName),
       xaxis: {
-        visible: false,
-        showticklabels: false
+        title: {
+          text: columnName,
+          font: {
+            family: 'Montserrat, sans-serif',
+            size: 14,
+            color: isDark ? 'rgba(244, 244, 245, 0.9)' : 'rgba(63, 63, 70, 0.9)'
+          }
+        },
+        showgrid: true,
+        gridcolor: isDark ? 'rgba(113, 113, 122, 0.2)' : 'rgba(212, 212, 216, 0.5)',
+        showticklabels: true,
+        tickfont: {
+          family: 'monospace',
+          size: 11,
+          color: isDark ? 'rgba(212, 212, 216, 0.9)' : 'rgba(63, 63, 70, 0.9)'
+        }
+      },
+      yaxis: {
+        showticklabels: false,
+        zeroline: false
       },
       margin: {
-        l: 50,
+        l: 20,
         r: 10,
-        t: 20,
-        b: 20
+        t: 40,
+        b: 70
       },
       showlegend: false,
-      /* annotations: [
-        {
-          x: 0,
-          y: 1.12,
-          xref: 'paper',
-          yref: 'paper',
-          text: 'Mean shown as dashed line',
-          showarrow: false,
-          font: {
-            family: 'monospace',
-            size: 10,
-            color: colors.textColor
-          }
-        }
-      ] */
     };
 
     // Get standard Plotly config with customized filename
@@ -155,7 +161,7 @@ const ViolinPlot: FunctionComponent<ViolinPlotProps> = ({
         }
       }
     };
-  }, [columnValues, columnName, isDark]);
+  }, [dataFrame, columnName, isDark]);
 
   return (
     <div className="w-full">

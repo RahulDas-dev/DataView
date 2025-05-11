@@ -1,7 +1,7 @@
 import { DataFrame } from 'danfojs';
 
 // URL validation function
-export const validateUrl = (url: string): string => {
+export const validateUrl = (url: string, allowedExtensions: string[]): string => {
   // Check if URL is empty
   if (url.trim() === '') {
     return 'No URL provided';
@@ -14,9 +14,10 @@ export const validateUrl = (url: string): string => {
     if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
       return 'URL must use http or https protocol';
     }
-    // Check file extension for CSV
-    if (!url.toLowerCase().endsWith('.csv')) {
-      return 'URL must point to a CSV file';
+    const fileName = url.toLowerCase().toLowerCase();
+    const isValid = allowedExtensions.some((ext) => fileName.endsWith(ext));
+    if (!isValid) {
+      return 'Selected file must be a CSV, XLS, XLSX, or JSON file';
     }
     return '';
   } catch (e: unknown) {
@@ -31,7 +32,7 @@ export const validateFile = (file: File | null, allowedExtensions: string[]): st
   }
   // Allow .csv, .xls, .xlsx, .json extensions
   const fileName = file.name.toLowerCase();
-  const isValid = allowedExtensions.some(ext => fileName.endsWith(ext));
+  const isValid = allowedExtensions.some((ext) => fileName.endsWith(ext));
   if (!isValid) {
     return 'Selected file must be a CSV, XLS, XLSX, or JSON file';
   }
