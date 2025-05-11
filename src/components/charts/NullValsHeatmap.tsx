@@ -50,13 +50,14 @@ const NullValuesHeatmap: FunctionComponent<NullValuesHeatmapProps> = ({
       return;
     }
     
+    const chartDiv = chartContainerRef.current;
+
     const heatmapData = generateHeatmapData();
     if (!heatmapData) {
-      chartContainerRef.current.innerHTML = '';
+      chartDiv.innerHTML = '';
       return;
     }
-    
-    chartContainerRef.current.innerHTML = '';
+    chartDiv.innerHTML = '';
     
     // Use the same explicit background colors as in BarChart
     const textColor = isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)';
@@ -165,18 +166,40 @@ const NullValuesHeatmap: FunctionComponent<NullValuesHeatmapProps> = ({
       responsive: true,
       displayModeBar: false
     };
+
+    // Make the plot responsive
+    const handleResize = () => {
+      if (chartDiv) {
+        Plotly.relayout(chartDiv, {
+          'width': chartDiv.offsetWidth
+        });
+      }
+    };
     
-    try {
-      Plotly.newPlot(chartContainerRef.current, data, layout, config);
-    } catch (err) {
-      console.error('Error rendering heatmap:', err);
-      chartContainerRef.current.innerHTML = '<div class="p-4 text-red-500 font-mono text-sm">Error rendering heatmap</div>';
-    }
+    // Add a small delay to ensure the container is fully rendered
+    const timer = setTimeout(() => {
+      try {
+        if (chartDiv) {
+          Plotly.newPlot(chartDiv, data, layout, config);
+          window.addEventListener('resize', handleResize);
+        }
+      } catch (err) {
+        console.error('Error rendering pie chart:', err);
+        if (chartDiv) {
+          chartDiv.innerHTML = '<div class="p-4 text-zinc-500 dark:text-zinc-400 font-mono text-sm">Error rendering pie chart</div>';
+        }
+      }
+    }, 50);
+    
     
     return () => {
-      if (chartContainerRef.current) {
+      clearTimeout(timer);
+      
+      // Remove resize event listener
+      window.removeEventListener('resize', handleResize);
+      if (chartDiv) {
         try {
-          Plotly.purge(chartContainerRef.current);
+          Plotly.purge(chartDiv);
         } catch (err) {
           console.error('Error cleaning up heatmap:', err);
         }

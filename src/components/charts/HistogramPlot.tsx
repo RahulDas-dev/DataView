@@ -132,7 +132,7 @@ const HistogramPlot: FunctionComponent<HistogramPlotProps> = ({
         }
       }
     };
-  }, [dataFrame, columnName,bandwidth, isDark]);
+  }, [dataFrame, columnName,bandwidth, binCount, isDark]);
 
   return (
     <div className="w-full">

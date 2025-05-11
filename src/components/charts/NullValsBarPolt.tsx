@@ -17,12 +17,13 @@ const NullValsBarPolt: FunctionComponent<BarChartProps> = ({
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const { isDark } = useTheme();
   useEffect(() => {
-    if (!chartContainerRef.current || !columnsInfo.length) {
+    const chartDiv = chartContainerRef.current;
+    if (!chartDiv || !columnsInfo.length) {
       return;
     }
     
     // Clear previous chart
-    chartContainerRef.current.innerHTML = '';
+    chartDiv.innerHTML = '';
     
     // Define chart colors based on theme
     const textColor = isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)';
@@ -86,7 +87,7 @@ const NullValsBarPolt: FunctionComponent<BarChartProps> = ({
       plot_bgcolor,
       margin,
       height: 400,
-      width: chartContainerRef.current.offsetWidth,
+      width: chartDiv.offsetWidth,
       bargap: 0.2
     };
     
@@ -94,19 +95,39 @@ const NullValsBarPolt: FunctionComponent<BarChartProps> = ({
       responsive: true,
       displayModeBar: false
     };
+
+    const handleResize = () => {
+      if (chartDiv) {
+        Plotly.relayout(chartDiv, {
+          'width': chartDiv.offsetWidth
+        });
+      }
+    };
     
-    try {
-      Plotly.newPlot(chartContainerRef.current, data, layout, config);
-    } catch (err) {
-      console.error('Error rendering bar chart:', err);
-      chartContainerRef.current.innerHTML = '<div class="p-4 text-red-500 font-mono text-sm">Error rendering bar chart</div>';
-    }
+    // Add a small delay to ensure the container is fully rendered
+    const timer = setTimeout(() => {
+      try {
+        if (chartDiv) {
+          Plotly.newPlot(chartDiv, data, layout, config);
+          window.addEventListener('resize', handleResize);
+        }
+      } catch (err) {
+        console.error('Error rendering pie chart:', err);
+        if (chartDiv) {
+          chartDiv.innerHTML = '<div class="p-4 text-zinc-500 dark:text-zinc-400 font-mono text-sm">Error rendering pie chart</div>';
+        }
+      }
+    }, 50);
     
     // Cleanup function
     return () => {
-      if (chartContainerRef.current) {
+      clearTimeout(timer);
+      
+      // Remove resize event listener
+      window.removeEventListener('resize', handleResize);
+      if (chartDiv) {
         try {
-          Plotly.purge(chartContainerRef.current);
+          Plotly.purge(chartDiv);
         } catch (err) {
           console.error('Error cleaning up bar chart:', err);
         }

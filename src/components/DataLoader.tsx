@@ -7,7 +7,7 @@ import FileBrowser, { FileBrowserHandle } from './FileBrowser';
 import FetchUrl from './FetchUrl';
 import SettingsDialog from './SettingsDialog';
 import { validateFile, validateUrl } from '../utility/FileUtility';
-import { dataLoaderReducer, init_state, ActionType } from '../utility/dataLoaderReducer';
+import { dataLoaderReducer, init_state, ActionType } from '../reducers/dataLoaderReducer';
 import useSettings from '../hooks/useSettings';
 import { ParseConfig } from 'papaparse';
 import { DataFrame, readCSV, readExcel, readJSON } from 'danfojs';
