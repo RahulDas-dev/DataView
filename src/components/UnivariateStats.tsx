@@ -24,17 +24,6 @@ const UnivariateStats: FunctionComponent = (): ReactElement => {
   // Use our hook for all statistics computations
   const stats = useColumnStats(dataFrame, selectedColumn);
   
-  // Get column values for the chart
-  const columnValues = useMemo(() => {
-    if (!dataFrame || !selectedColumn) return [];
-    try {
-      return dataFrame[selectedColumn]?.values || [];
-    } catch (e) {
-      console.error("Error getting column values:", e);
-      return [];
-    }
-  }, [dataFrame, selectedColumn]);
-  
   // Get top 10 frequencies for display
   const topFrequencies = useMemo(() => {
     if (!stats || stats.error) return [];
@@ -50,49 +39,31 @@ const UnivariateStats: FunctionComponent = (): ReactElement => {
       id: 'histogram',
       label: 'Histogram + KDE',
       content: (
-        <HistogramPlot 
-          columnName={selectedColumn || ''}
-          columnValues={columnValues as number[]}
-          binCount={30}
-        />
+        <HistogramPlot columnName={selectedColumn} />
       )
     },
     {
       id: 'kde',
       label: 'KDE Plot',
       content: (
-        <KDEPlot 
-          columnName={selectedColumn || ''}
-          columnValues={columnValues as number[]}
-          smoothingFactor={1.0}
-        />
+        <KDEPlot columnName={selectedColumn} />
       )
-    }
-  ], [selectedColumn, columnValues]);
-  
-  // Box and Violin tab options for numerical data
-  const boxViolinTabs = useMemo(() => [
+    },
     {
       id: 'boxplot',
       label: 'Box Plot',
       content: (
-        <BoxPlot 
-          columnName={selectedColumn || ''}
-          columnValues={columnValues as number[]}
-        />
+        <BoxPlot columnName={selectedColumn} />
       )
     },
     {
       id: 'violin',
       label: 'Violin Plot',
       content: (
-        <ViolinPlot 
-          columnName={selectedColumn || ''}
-          columnValues={columnValues as number[]}
-        />
+        <ViolinPlot columnName={selectedColumn}/>
       )
     }
-  ], [selectedColumn, columnValues]);
+  ], [selectedColumn]);
   
   // Count plot tab options for categorical data
   const countPlotTabs = useMemo(() => [
@@ -100,29 +71,17 @@ const UnivariateStats: FunctionComponent = (): ReactElement => {
       id: 'countplot',
       label: 'Count Plot',
       content: (
-        <CountPlot 
-          columnName={selectedColumn || ''}
-          categoryValues={columnValues as string[]}
-          maxCategories={20}
-        />
+        <CountPlot columnName={selectedColumn}/>
       )
-    }
-  ], [selectedColumn, columnValues]);
-  
-  // Pie chart tab options for categorical data
-  const pieChartTabs = useMemo(() => [
+    },
     {
       id: 'piechart',
       label: 'Pie Chart',
       content: (
-        <PieChart 
-          columnName={selectedColumn || ''}
-          categoryValues={columnValues as string[]}
-          maxCategories={10}
-        />
+        <PieChart columnName={selectedColumn}/>
       )
     }
-  ], [selectedColumn, columnValues]);
+  ], [selectedColumn]);
   
   return (
     <div className="w-full p-5 rounded-md bg-white dark:bg-zinc-900 shadow-md mb-20">
@@ -175,38 +134,24 @@ const UnivariateStats: FunctionComponent = (): ReactElement => {
       )}
       { 
         stats && stats.numeric && (
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="mt-6 grid grid-cols-1 gap-6">
             <div className="bg-zinc-50 dark:bg-zinc-800 p-5 rounded-md">
-              <h3 className="text-lg font-['Montserrat'] font-medium mb-3">Distribution</h3>
               <TabSelector 
                 tabs={distributionTabs}
                 defaultTabId="histogram"
-              />
-            </div>
-            <div className="bg-zinc-50 dark:bg-zinc-800 p-5 rounded-md">
-              <h3 className="text-lg font-['Montserrat'] font-medium mb-3">Distribution Plot</h3>
-              <TabSelector 
-                tabs={boxViolinTabs}
-                defaultTabId="boxplot"
+                title="NeumericalData"
               />
             </div>
         </div> )
       }
       { 
         stats && (stats.categorical || stats.boolean) && (
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-1 gap-6">
             <div className="bg-zinc-50 dark:bg-zinc-800 p-5 rounded-md">
-              <h3 className="text-lg font-['Montserrat'] font-medium mb-3">Frequency</h3>
               <TabSelector 
                 tabs={countPlotTabs}
                 defaultTabId="countplot"
-              />
-            </div>
-            <div className="bg-zinc-50 dark:bg-zinc-800 p-5 rounded-md">
-              <h3 className="text-lg font-['Montserrat'] font-medium mb-3">Proportion</h3>
-              <TabSelector 
-                tabs={pieChartTabs}
-                defaultTabId="piechart"
+                title="Categorical Data"
               />
             </div>
         </div> )

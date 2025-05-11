@@ -2,10 +2,11 @@ import { FunctionComponent, useEffect, useRef } from 'react';
 import Plotly from 'plotly.js-dist-min';
 import { useTheme } from '../../hooks/useTheme';
 import { getChartColors, getPlotlyConfig, getBaseLayout } from './PlotConfigs';
+import { useData } from '../../hooks/useData';
+import { Series } from 'danfojs';
 
 interface CountPlotProps {
-  columnName: string;
-  categoryValues: string[];
+  columnName: string| null;
   maxCategories?: number; // Maximum number of categories to display
 }
 
@@ -15,14 +16,14 @@ interface CountPlotProps {
  */
 const CountPlot: FunctionComponent<CountPlotProps> = ({
   columnName,
-  categoryValues,
-  maxCategories = 20 // Default to showing top 20 categories
+  maxCategories = 30 // Default to showing top 20 categories
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const { isDark } = useTheme();
+  const { dataFrame } = useData();
 
   useEffect(() => {
-    if (!chartContainerRef.current || !categoryValues.length) {
+    if (!chartContainerRef.current || !dataFrame|| dataFrame.isEmpty || dataFrame.shape[0]==0 ||!columnName) {
       return;
     }
 
@@ -35,29 +36,29 @@ const CountPlot: FunctionComponent<CountPlotProps> = ({
     // Get theme colors
     const colors = getChartColors(isDark);
 
-    // Filter out null or empty values
-    const validValues = categoryValues.filter(val => val !== null && val !== undefined && val !== '');
-
+    // Filter out null or NaN values for valid calculations
+    const cleanDf: Series = dataFrame[columnName].dropNa()
+    // Filter out null or NaN values for valid calculations
+    const validValues = cleanDf.values as (number| string| boolean) [];
+        
     if (validValues.length === 0) {
       chartDiv.innerHTML = '<div class="p-4 text-zinc-500 dark:text-zinc-400 font-mono text-sm">No valid categorical data to display</div>';
       return;
     }
+    const valueCounts = cleanDf.valueCounts().sortValues({ ascending: false });
 
-    // Count frequencies of each category
-    const frequencyMap = validValues.reduce((acc, val) => {
-      acc[val] = (acc[val] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    // Convert to Record<string, number>
+    const frequencyMap: Record<string, number> = {};
+    const categories = valueCounts.index.map((x:string| number| symbol)=> String(x)) as string[];
+    const counts = valueCounts.values as number[];
 
+    // Combine into a single object
+    const totalcategories = Math.min(categories.length, maxCategories);
+    for (let i = 0; i < totalcategories; i++) {
+      frequencyMap[categories[i]] = counts[i];
+    }
     // Convert to array and sort by frequency (descending)
-    const sortedCategories = Object.entries(frequencyMap)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, maxCategories); // Limit to top maxCategories
-
-    // Extract categories and counts for the plot
-    const categories = sortedCategories.map(([category]) => category);
-    const counts = sortedCategories.map(([, count]) => count);
-
+    
     // Define zinc gradient colors for bars
     const barColors = colors.barGradient;
 
@@ -89,10 +90,11 @@ const CountPlot: FunctionComponent<CountPlotProps> = ({
         l: 50,
         r: 10,
         t: 40,
-        b: sortedCategories.length > 10 ? 120 : 80 // Adjust bottom margin based on number of categories
+        b: categories.length > 10 ? 120 : 80 // Adjust bottom margin based on number of categories
       },
       bargap: 0.2,
-      showlegend: false
+      showlegend: false,
+      //height:500
     };
 
     // Get standard Plotly config
@@ -139,7 +141,7 @@ const CountPlot: FunctionComponent<CountPlotProps> = ({
         }
       }
     };
-  }, [categoryValues, columnName, maxCategories, isDark]);
+  }, [dataFrame, columnName, maxCategories, isDark]);
 
   return (
     <div className="w-full">

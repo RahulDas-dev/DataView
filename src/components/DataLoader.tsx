@@ -54,7 +54,7 @@ const DataLoader: FunctionComponent = (): ReactElement => {
         payload: { file_object: null } 
       });
     }
-  }, []);
+  }, [settings.allowedFileExtensions]);
 
   const handleUrlChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     dispatch({ 
@@ -68,7 +68,7 @@ const DataLoader: FunctionComponent = (): ReactElement => {
 
   const handleInputBlur = useCallback(() => {
     if (fileUrl) {
-      const validationErr_ = validateUrl(fileUrl);
+      const validationErr_ = validateUrl(fileUrl, settings.allowedFileExtensions);
       if (validationErr_) {
         dispatch({ 
           type: ActionType.PROCESS_ERROR, 
@@ -82,7 +82,7 @@ const DataLoader: FunctionComponent = (): ReactElement => {
         payload: { file_url: '' } 
       });
     }
-  }, [fileUrl]);
+  }, [fileUrl, settings]);
 
   const processFile = useCallback(async () => {
     dispatch({ type: ActionType.PROCESS_START });
@@ -138,11 +138,11 @@ const DataLoader: FunctionComponent = (): ReactElement => {
         payload: { error: new Error(`Error processing file: ${error instanceof Error ? error.message : String(error)}`) }
       });
     }
-  }, [fileInput, settings, setDataFrame]);
+  }, [fileInput, settings.allowedFileExtensions, setDataFrame]);
 
   const processUrl = useCallback(async () => {
     dispatch({ type: ActionType.PROCESS_START });
-    const validationErr_ = validateUrl(fileUrl);
+    const validationErr_ = validateUrl(fileUrl, settings.allowedFileExtensions);
     if (validationErr_) {
       dispatch({ 
         type: ActionType.PROCESS_ERROR, 
@@ -176,7 +176,7 @@ const DataLoader: FunctionComponent = (): ReactElement => {
         payload: { error: new Error('Failed to process URL: ' + (error instanceof Error ? error.message : String(error))) }
       });
     }
-  }, [fileUrl, setDataFrame]);
+  }, [fileUrl,settings, setDataFrame]);
 
   const handleReset = useCallback(() => {
     dispatch({ type: ActionType.RESET });

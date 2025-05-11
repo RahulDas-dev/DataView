@@ -2,8 +2,9 @@ import { FunctionComponent, ReactElement, useMemo } from 'react';
 import { useData } from '../hooks/useData';
 import { useTheme } from '../hooks/useTheme';
 import useDataStats from '../hooks/useDataStats';
-import NullValuesHeatmap from './charts/NullValuesHeatmap';
-import BarChart from './charts/BarChart';
+import NullValuesHeatmap from './charts/NullValsHeatmap';
+import NullValsBarPolt from './charts/NullValsBarPolt';
+import TabSelector from './common/TabSelector';
 
 const DataSummary: FunctionComponent = (): ReactElement => {
   const { dataFrame } = useData();
@@ -27,6 +28,23 @@ const DataSummary: FunctionComponent = (): ReactElement => {
       
     return { totalNullCount, totalNullPercentage };
   }, [stats]);
+
+  const NullcountPlotTabs = useMemo(() => [
+    {
+      id: 'nullcountplot',
+      label: 'Null Count Plot',
+      content: (
+        <NullValsBarPolt columnsInfo={stats.columnsInfo}/>
+      )
+    },
+    {
+      id: 'nullheatmap',
+      label: 'Null Values HeatMap',
+      content: (
+        <NullValuesHeatmap dataFrame={dataFrame} />
+      )
+    }
+  ], [stats.columnsInfo, dataFrame]);
 
   return (
     <div className="w-full p-5 rounded-md bg-white dark:bg-zinc-900 shadow-md mb-6">
@@ -119,18 +137,18 @@ const DataSummary: FunctionComponent = (): ReactElement => {
             </div>
           </div>
         </div>
-        { 
-        totalNullStats.totalNullCount > 0 && (
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+       
+       { 
+        totalNullStats.totalNullCount > 0 && (   
+        <div className="mt-6 grid grid-cols-1 gap-6">
             <div className="bg-zinc-50 dark:bg-zinc-800 p-5 rounded-md">
-              <h3 className="text-lg font-['Montserrat'] font-medium mb-3">Null Values HeatMap</h3>
-              <NullValuesHeatmap dataFrame={dataFrame} darkMode={isDark} />
+              <TabSelector 
+                tabs={NullcountPlotTabs}
+                defaultTabId="nullcountplot"
+                title="Null Value Analysis"
+              />
             </div>
-            <div className="bg-zinc-50 dark:bg-zinc-800 p-5 rounded-md">
-              <h3 className="text-lg font-['Montserrat'] font-medium mb-3">Null Count by Column</h3>
-              <BarChart columnsInfo={stats.columnsInfo} darkMode={isDark} />
-            </div>
-        </div> )}     
+        </div>  )} 
     </div>
   );
 };

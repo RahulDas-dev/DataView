@@ -1,5 +1,6 @@
 import { FunctionComponent, useEffect, useRef } from 'react';
 import Plotly from 'plotly.js-dist-min';
+import useTheme from '../../hooks/useTheme';
 
 interface BarChartProps {
   columnsInfo: Array<{
@@ -8,15 +9,13 @@ interface BarChartProps {
     nullCount: number;
     nullPercentage: number;
   }>;
-  darkMode: boolean;
 }
 
-const BarChart: FunctionComponent<BarChartProps> = ({ 
-  columnsInfo,
-  darkMode
+const NullValsBarPolt: FunctionComponent<BarChartProps> = ({ 
+  columnsInfo
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
-  
+  const { isDark } = useTheme();
   useEffect(() => {
     if (!chartContainerRef.current || !columnsInfo.length) {
       return;
@@ -26,11 +25,11 @@ const BarChart: FunctionComponent<BarChartProps> = ({
     chartContainerRef.current.innerHTML = '';
     
     // Define chart colors based on theme
-    const textColor = darkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)';
-    const paper_bgcolor = darkMode ? '#27272a' : '#f9fafb'; // zinc-800 for dark, gray-50 for light
-    const plot_bgcolor = darkMode ? '#27272a' : '#f9fafb';
+    const textColor = isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)';
+    const paper_bgcolor = isDark ? '#27272a' : '#f9fafb'; // zinc-800 for dark, gray-50 for light
+    const plot_bgcolor = isDark ? '#27272a' : '#f9fafb';
     // const barColor = '#F08080'; // Red color for consistency with the null values heatmap
-    const barColor = darkMode ? '#f8f8f8':'#353935' ;
+    const barColor = isDark ? '#f8f8f8':'#353935' ;
     
     // Sort columns by null count in descending order
     const sortedColumns = [...columnsInfo].sort((a, b) => b.nullCount - a.nullCount);
@@ -113,7 +112,7 @@ const BarChart: FunctionComponent<BarChartProps> = ({
         }
       }
     };
-  }, [columnsInfo, darkMode]);
+  }, [columnsInfo, isDark]);
   
   if (!columnsInfo.length) {
     return null;
@@ -134,4 +133,4 @@ const BarChart: FunctionComponent<BarChartProps> = ({
   );
 };
 
-export default BarChart;
+export default NullValsBarPolt;
