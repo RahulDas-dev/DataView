@@ -29,6 +29,11 @@ const DataSummary: FunctionComponent = (): ReactElement => {
     return { totalNullCount, totalNullPercentage };
   }, [stats]);
 
+  const constantColumns = useMemo(() => {
+    const columns = stats.columnsInfo.filter(col => col.isConstant).map(col => col.name);
+    return columns.length > 0 ? columns.join(',') : null;
+  }, [stats]);
+
   const NullcountPlotTabs = useMemo(() => [
     {
       id: 'nullcountplot',
@@ -90,6 +95,11 @@ const DataSummary: FunctionComponent = (): ReactElement => {
                 <span className="font-mono text-sm">
                   {(100 - stats.columnsInfo.reduce((acc, col) => acc + col.nullPercentage, 0) / stats.totalColumns).toFixed(2)}%
                 </span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="space-y-2 font-mono text-sm text-zinc-600 dark:text-zinc-300">Constant Columns:</span>
+                <span className="font-mono text-sm">{constantColumns}</span>
               </div>
             </div>
           </div>

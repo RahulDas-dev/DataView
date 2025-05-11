@@ -76,23 +76,26 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                   Application Error
                 </h3>
                 
-                <div className="mt-4 bg-red-50 dark:bg-red-900/20 p-5 rounded-md overflow-auto max-h-72">
-                  <div className="text-red-700 dark:text-red-300 text-base mb-3 font-mono font-bold">
-                    {this.state.error?.message}
-                  </div>
-                  
-                  <div className="text-red-600 dark:text-red-400 text-sm font-mono">
-                    <div className="mb-2">
-                      <span className="font-bold">Location: </span>
-                      {this.extractErrorLocation()}
+                <div className="mt-4 bg-red-50 dark:bg-red-900/20 p-5 rounded-md overflow-hidden">
+                  {/* Remove max-height restriction and improve container */}
+                  <div className="overflow-auto max-h-[50vh]">
+                    <div className="text-red-700 dark:text-red-300 text-base mb-3 font-mono font-bold">
+                      {this.state.error?.message}
                     </div>
                     
-                    {this.state.errorInfo && (
-                      <div className="whitespace-pre-wrap mt-3 border-t border-red-200 dark:border-red-800 pt-3">
-                        <div className="font-bold mb-1">Component Stack:</div>
-                        {this.state.errorInfo.componentStack}
+                    <div className="text-red-600 dark:text-red-400 text-sm font-mono">
+                      <div className="mb-2">
+                        <span className="font-bold">Location: </span>
+                        {this.extractErrorLocation()}
                       </div>
-                    )}
+                      
+                      {this.state.errorInfo && (
+                        <div className="whitespace-pre-wrap mt-3 border-t border-red-200 dark:border-red-800 pt-3">
+                          <div className="font-bold mb-1">Component Stack:</div>
+                          {this.state.errorInfo.componentStack}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
                 

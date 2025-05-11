@@ -209,7 +209,7 @@ const DataLoader: FunctionComponent = (): ReactElement => {
   }, []);
 
   return (
-    <div className="w-full my-20 p-6 rounded-lg bg-gradient-to-r from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900 flex flex-col justify-center items-center gap-6 shadow-md transition-all duration-300 ease-in-out hover:shadow-lg">
+    <div className="w-full my-20 p-6 rounded-lg bg-white dark:bg-zinc-800 flex flex-col justify-center items-center gap-6 shadow-md transition-all duration-300 ease-in-out hover:shadow-lg">
       <div className="w-full flex flex-row justify-between items-center">
         <div className="flex gap-4">
           <RadioCheckbox
@@ -232,7 +232,7 @@ const DataLoader: FunctionComponent = (): ReactElement => {
           size="small"
           onClick={handleSettingsOpen}
           aria-label="Settings"
-          className="bg-zinc-200 dark:bg-zinc-700 p-2 rounded-full hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-colors"
+          className="bg-white dark:bg-zinc-700 p-2 rounded-full hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-colors"
         >
           <FiSettings className="text-lg" />
         </Button>

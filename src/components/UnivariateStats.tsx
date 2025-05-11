@@ -121,7 +121,7 @@ const UnivariateStats: FunctionComponent = (): ReactElement => {
         </div>
       </div>
       {!selectedColumn && (
-        <div className="p-10 text-center text-lg space-x-1 text-zinc-500 dark:text-zinc-400">
+        <div className="p-10 text-center tracking-widest text-lg space-x-1 text-zinc-500 dark:text-zinc-400">
           Please select a column to view statistics and visualizations.
         </div>
       )}

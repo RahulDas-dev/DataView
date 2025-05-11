@@ -31,7 +31,7 @@ const MultivariateStats: FunctionComponent = (): ReactElement => {
   return (
     <div className="w-full p-5 rounded-md bg-white dark:bg-zinc-900 shadow-md mb-20">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-['Montserrat']">Multivariate Analysis</h2>
+        <h2 className="text-xl font-['Montserrat']">Multivariate Statistics</h2>
       </div>
 
       {/* Visualization area */}
