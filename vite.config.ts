@@ -9,7 +9,10 @@ export default defineConfig(({ mode }) => {
   const config = {
     base: '/DataView/',
     plugins: [react(), tailwindcss()],
-    build: {}
+    build: {},
+    optimizeDeps: {
+      include: ['danfojs']
+    },
   }
 
   // Add production-specific build options
