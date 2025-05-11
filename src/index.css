@@ -44,7 +44,10 @@
     -moz-appearance: textfield;
   }
   input::placeholder {
-    @apply text-gray-500 dark:text-gray-400;
+    @apply text-gray-500;
+  }
+  .dark input::placeholder {
+    @apply text-gray-400;
   }
 }
 
