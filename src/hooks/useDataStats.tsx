@@ -12,6 +12,7 @@ interface DataStats {
     dtype: string;
     nullCount: number;
     nullPercentage: number;
+    isConstant: boolean;
   }>;
   isEmpty: boolean;
 }
@@ -91,9 +92,15 @@ const useDataStats = (dataFrame: DataFrame | null): DataStats => {
       // Get column information including dtype and null counts
       const columnsInfo = dataFrame.columns.map(column => {
         let nullCount = 0;
+        let isConstant = false;
         try {
           // Count nulls in the column
-          nullCount = dataFrame.column(column).isNa().values.filter(Boolean).length;
+          nullCount = dataFrame[column].isNa().values.filter(Boolean).length;
+          if (['string','boolean'].includes(dataFrame[column].dtype)) {
+              isConstant = dataFrame[column].nUnique() === 1;
+          }else {
+            isConstant = dataFrame[column].std() === 0;
+          }
         } catch (error) {
           console.warn(`Error counting nulls in column ${column}:`, error);
         }
@@ -102,7 +109,8 @@ const useDataStats = (dataFrame: DataFrame | null): DataStats => {
           name: column,
           dtype: dataFrame[column].dtype,
           nullCount,
-          nullPercentage: rows > 0 ? (nullCount / rows) * 100 : 0
+          nullPercentage: rows > 0 ? (nullCount / rows) * 100 : 0,
+          isConstant
         };
       });
       

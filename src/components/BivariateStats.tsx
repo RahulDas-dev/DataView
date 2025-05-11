@@ -185,7 +185,7 @@ const BivariateStats: FunctionComponent = (): ReactElement => {
   return (
     <div className="w-full p-5 rounded-md bg-white dark:bg-zinc-900 shadow-md mb-20">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-['Montserrat']">Bivariate Analysis</h2>
+        <h2 className="text-xl font-['Montserrat']">Bivariate Statistics</h2>
         <div className="flex gap-8">
           <div className="flex items-center">
           <label htmlFor="first-column-select" className="inline-block text-sm font-mono mr-3 whitespace-nowrap">
@@ -234,7 +234,7 @@ const BivariateStats: FunctionComponent = (): ReactElement => {
       
       {/* Error states */}
       {(!firstColumn || !secondColumn) && (
-        <div className="p-10 text-center text-lg space-x-1 text-zinc-500 dark:text-zinc-400">
+        <div className="p-10 text-center tracking-widest text-lg space-x-1 text-zinc-500 dark:text-zinc-400">
           Please select the columns to view statistics and visualizations.
         </div>
       )}
