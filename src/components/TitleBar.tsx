@@ -60,14 +60,14 @@ const TitleBar: FunctionComponent = (): ReactElement => {
                                 About Author
                             </a>
                         </li>
-                        <li>
+                        {/* <li>
                             <a 
                                 href="#project" 
                                 className="text-sm text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white transition-colors"
                             >
                                 Contact
                             </a>
-                        </li>
+                        </li> */}
                         <li>
                             <Button 
                                 variant="icon"
