@@ -1,5 +1,5 @@
 import { FunctionComponent, ReactElement, useCallback, useRef, useReducer, ChangeEvent } from 'react';
-import { FiRefreshCw, FiSettings } from 'react-icons/fi';
+import { FiSettings } from 'react-icons/fi';
 import { Button } from './Button';
 import { useData } from '../hooks/useData';
 import RadioCheckbox from './RadioCheckbox';
@@ -14,7 +14,6 @@ import { DataFrame, readCSV, readExcel, readJSON } from 'danfojs';
 
 
 const DataLoader: FunctionComponent = (): ReactElement => {
-  //const file_browser_ref = useRef<HTMLInputElement>(null);
   const fileBrowserRef = useRef<FileBrowserHandle>(null);
   const { setDataFrame, resetDataFrame } = useData();
   const [state, dispatch] = useReducer(dataLoaderReducer, init_state);
@@ -29,8 +28,6 @@ const DataLoader: FunctionComponent = (): ReactElement => {
     error, 
     fileInput,
     fileUrl,
-    //isLoading,
-    // loadingStatus
   } = state;
 
   const handleFileChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -61,9 +58,6 @@ const DataLoader: FunctionComponent = (): ReactElement => {
       type: ActionType.SET_FILE_URL, 
       payload: { file_url: e.target.value } 
     });
-    /* if (file_browser_ref.current) {
-      file_browser_ref.current.value = e.target.value;
-    } */
   }, []);
 
   const handleInputBlur = useCallback(() => {
@@ -209,7 +203,7 @@ const DataLoader: FunctionComponent = (): ReactElement => {
   }, []);
 
   return (
-    <div className="w-full my-20 p-6 rounded-lg bg-white dark:bg-zinc-800 flex flex-col justify-center items-center gap-6 shadow-md transition-all duration-300 ease-in-out hover:shadow-lg">
+    <div className="w-full my-20 p-6 rounded-lg bg-transparent flex flex-col justify-center items-center gap-6">
       <div className="w-full flex flex-row justify-between items-center">
         <div className="flex gap-4">
           <RadioCheckbox
@@ -232,7 +226,7 @@ const DataLoader: FunctionComponent = (): ReactElement => {
           size="small"
           onClick={handleSettingsOpen}
           aria-label="Settings"
-          className="bg-white dark:bg-zinc-700 p-2 rounded-full hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-colors"
+          className="p-2 rounded-full transition-colors"
         >
           <FiSettings className="text-lg" />
         </Button>
@@ -243,17 +237,21 @@ const DataLoader: FunctionComponent = (): ReactElement => {
           <FileBrowser
             disableInput={disableFileInput}
             disablebtn={disableProcesBtn}
+            showResetbtn={showResetButton}
             onFileChange={handleFileChange}
             processFile={processFile}
+            onReset={handleReset}
             ref={fileBrowserRef}
           />
         ) : (
           <FetchUrl
             disableInput={disableFileInput}
             disablebtn={disableProcesBtn}
+            showResetbtn={showResetButton}
             onUrlChange={handleUrlChange}
             onUrlBlur={handleInputBlur}
             processUrl={processUrl}
+            onReset={handleReset}
             ref={fileBrowserRef}
           />
         )}
@@ -263,16 +261,6 @@ const DataLoader: FunctionComponent = (): ReactElement => {
         <div className={`flex justify-center items-center px-3 py-1 font-mono text-xs ${error ? 'text-red-500 bg-red-50 dark:bg-red-900/20 rounded-md' : 'text-transparent'}`}>
           {error?.message || 'No errors'}
         </div>
-        
-        {/* Always render the button but control visibility with CSS */}
-        <Button
-          variant="secondary"
-          size="small"
-          onClick={handleReset}
-          className={`whitespace-nowrap min-w-24 h-9 rounded-lg shadow-sm hover:shadow px-4 font-medium hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-all duration-500 ease-in-out ${showResetButton ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-        >
-          <FiRefreshCw className="text-sm animate-pulse" /> Reset
-        </Button>
       </div>
       
       {isSettingsOpen &&       

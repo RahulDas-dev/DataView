@@ -30,7 +30,7 @@ const RadioCheckbox = forwardRef<HTMLInputElement, RadioCheckboxProps>(
             disabled:border-zinc-400 disabled:bg-zinc-200 disabled:dark:border-zinc-600 disabled:dark:bg-zinc-700"
           >
             {value && (
-              <div className="w-2 h-2 rounded-full bg-zinc-600 dark:bg-zinc-400 disabled:opacity-50"></div>
+              <div className="w-2 h-2 rounded-full bg-zinc-900 dark:bg-zinc-100 disabled:opacity-50"></div>
             )}
           </div>
         </div>

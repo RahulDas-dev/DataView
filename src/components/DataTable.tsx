@@ -183,10 +183,10 @@ const DataTable: FunctionComponent = (): ReactElement => {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-['Montserrat'] ">Data Table</h2>
         <div className="flex gap-2">
-          <Button variant="secondary" size="small" onClick={handleOpenRenameDialog}>
+          <Button variant="primary" size="small" onClick={handleOpenRenameDialog}>
             <AiOutlineEdit  /> Rename Columns & Change Data Types
           </Button>
-          <Button variant="secondary" size="small" onClick={handleExport}>
+          <Button variant="primary" size="small" onClick={handleExport}>
             <FiDownload /> Export
           </Button>
           
@@ -268,7 +268,7 @@ const DataTable: FunctionComponent = (): ReactElement => {
           </div>
           <div className="flex gap-2">
             <Button 
-              variant="secondary" 
+              variant="primary" 
               size="small" 
               onClick={handlePrevPage}
               disabled={page === 1}
@@ -276,7 +276,7 @@ const DataTable: FunctionComponent = (): ReactElement => {
               Previous
             </Button>
             <Button 
-              variant="secondary" 
+              variant="primary" 
               size="small" 
               onClick={handleNextPage}
               disabled={page === totalPages}
