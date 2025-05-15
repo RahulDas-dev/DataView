@@ -36,7 +36,14 @@ const Appbody: FunctionComponent = (): ReactElement => {
       {is_table_populated && <DataSummary />}
       {is_table_populated && <UnivariateStats />}
       {is_table_populated && <BivariateStats />} 
-      {is_table_populated && <MultivariateStats />} 
+      {is_table_populated && <MultivariateStats />}
+      {is_table_populated && (
+        <div>
+          <br />
+          <br />
+          <br />
+        </div>
+      )} 
     </div>
   );
 };
