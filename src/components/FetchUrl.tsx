@@ -59,25 +59,27 @@ const FetchUrl = forwardRef<FileBrowserHandle, FetchUrlProps>(({
             />
           </div>
         </div>
-        {!disablebtn && <Button
-          variant="primary"
-          size="small"
-          onClick={processUrl}
-          disabled={disablebtn}
-          className="whitespace-nowrap min-w-24"
-        >
-          <HiOutlinePlay className="text-lg" /> Process
-        </Button>}
-        {showResetbtn && 
-          <Button
+        <div className='flex items-center gap-2 min-w-24'>
+          {!disablebtn && <Button
             variant="primary"
             size="small"
-            onClick={onReset}
-            className="whitespace-nowrap min-w-24 "
+            onClick={processUrl}
+            disabled={disablebtn}
+            className="whitespace-nowrap h-9 min-w-24"
           >
-            <FiRefreshCw className="text-sm animate-pulse" /> Reset
-          </Button>
-        }
+            <HiOutlinePlay className="text-lg" /> Process
+          </Button>}
+          {showResetbtn && 
+            <Button
+              variant="primary"
+              size="small"
+              onClick={onReset}
+              className="whitespace-nowrap h-9 min-w-24"
+            >
+              <FiRefreshCw className="text-sm animate-pulse" /> Reset
+            </Button>
+          }
+        </div>
       </div>
     </div>
   );

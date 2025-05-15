@@ -144,11 +144,11 @@
   /* Button Styles */
   .btn {
     @apply rounded transition duration-200 ease-in-out flex items-center justify-center gap-2 font-mono text-xs cursor-pointer
-      disabled:opacity-70 disabled:cursor-not-allowed;
+      disabled:opacity-70 disabled:cursor-not-allowed h-9;
   }
 
   .btn-primary {
-    @apply bg-zinc-900 text-white hover:bg-black dark:bg-zinc-800 dark:hover:bg-zinc-700 
+    @apply bg-zinc-900 text-white hover:bg-black dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 
       disabled:bg-zinc-400 dark:disabled:bg-zinc-700 disabled:hover:bg-zinc-400 dark:disabled:hover:bg-zinc-700 ;
   }
 
@@ -158,7 +158,7 @@
   }
 
   .btn-icon {
-    @apply bg-transparent text-zinc-900 hover:text-zinc-600 dark:text-zinc-100 dark:hover:text-zinc-300 
+    @apply bg-transparent text-zinc-700 hover:text-zinc-900 dark:text-zinc-100 dark:hover:text-zinc-300 
       disabled:bg-transparent disabled:text-zinc-400 disabled:opacity-50;
   }
 
