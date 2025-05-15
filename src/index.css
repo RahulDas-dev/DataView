@@ -148,7 +148,7 @@
   }
 
   .btn-primary {
-    @apply bg-zinc-900 text-white hover:bg-black dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 
+    @apply bg-zinc-800 text-white hover:bg-black dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 
       disabled:bg-zinc-400 dark:disabled:bg-zinc-700 disabled:hover:bg-zinc-400 dark:disabled:hover:bg-zinc-700 ;
   }
 
