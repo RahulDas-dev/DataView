@@ -5,7 +5,8 @@ import {
   FiX, 
   FiSun, 
   FiMoon, 
-  FiGrid 
+  FiGrid, 
+  FiUser
 } from 'react-icons/fi';
 
 import { Button } from './Button';
@@ -107,25 +108,30 @@ const TitleBar: FunctionComponent = (): ReactElement => {
                                         href={import.meta.env.VITE_PROFILE_PAGE} 
                                         target="_blank"
                                         rel="noopener noreferrer" 
-                                        className="text-sm text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white transition-colors"
-                                    >
-                                        About Author
+                                        className="flex items-center gap-1.5 text1-sm text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white transition-colors"
+                                        onClick={() => setMenu(true)}
+                                        >
+                                        <FiUser className="text-base" />
+                                        <span>About Author</span>
                                     </a>
                                 </li>
-                                <li>
+                                {/* <li>
                                     <a 
                                         href="#project" 
                                         className="text-sm text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white transition-colors"
                                     >
                                         Contact
                                     </a>
-                                </li>
+                                </li> */}
                                 <li>
                                     <Button 
                                         variant="icon"
                                         size="small"
-                                        className="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white transition-colors" 
-                                        onClick={toggleTheme}
+                                        className="flex items-center gap-1.5 p-0 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white transition-colors" 
+                                        onClick={() => {
+                                            toggleTheme(); 
+                                            setMenu(true);
+                                        }}
                                         aria-label="Toggle theme"
                                     >
                                         {isDark ? 

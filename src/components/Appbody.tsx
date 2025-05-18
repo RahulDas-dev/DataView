@@ -24,7 +24,7 @@ const Appbody: FunctionComponent = (): ReactElement => {
   }, [dataFrame]);
 
   return (
-    <div className="app-body container">
+    <div className="app-body container flex-1">
       <div className="mt-20 text-justify">
         <br /><br /><br />
         <h1 className="text-xl text-center mb-2 font-['Montserrat'] font-semibold">Welcome to DataView App!</h1>
