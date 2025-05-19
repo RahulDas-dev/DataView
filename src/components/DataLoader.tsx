@@ -203,7 +203,7 @@ const DataLoader: FunctionComponent = (): ReactElement => {
   }, []);
 
   return (
-    <div className="w-full my-20 p-6 rounded-lg bg-transparent flex flex-col justify-center items-center gap-6">
+    <div className="w-full mt-20 p-6 rounded-lg bg-transparent flex flex-col justify-center items-center gap-6">
       <div className="w-full flex flex-row justify-between items-center">
         <div className="flex gap-4">
           <RadioCheckbox

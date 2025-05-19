@@ -6,6 +6,7 @@ import DataTable from './DataTable';
 import UnivariateStats from './UnivariateStats';
 import BivariateStats from './BivariateStats';
 import MultivariateStats from './MultivariateStats';
+import { Preprocessing } from './Preprocessing';
 
 const Appbody: FunctionComponent = (): ReactElement => {
   const { dataFrame } = useData();
@@ -32,6 +33,7 @@ const Appbody: FunctionComponent = (): ReactElement => {
         <br />
       </div>
       <DataLoader />
+      {is_table_populated && <Preprocessing />}
       {is_table_populated && <DataTable />}
       {is_table_populated && <DataSummary />}
       {is_table_populated && <UnivariateStats />}

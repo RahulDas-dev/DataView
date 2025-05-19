@@ -3,19 +3,13 @@ import { useData } from '../hooks/useData';
 import { useSettings } from '../hooks/useSettings';
 import { Button } from './Button';
 import { FiDownload } from 'react-icons/fi';
-import { AiOutlineEdit } from 'react-icons/ai';
-import RenameColumnsDialog from './ReanmeColumnDialog';
-import { ColumnDtype, inferDataTypes } from '../utility/Dfutility';
 
 
 const DataTable: FunctionComponent = (): ReactElement => {
-  const { dataFrame, setDataFrame } = useData();
+  const { dataFrame } = useData();
   const { settings } = useSettings();
   const [page, setPage] = useState(1);
-  const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
-  const [columnDataTypes, setColumnDataTypes] = useState<Record<string, ColumnDtype>>({});
   const csvLinkRef = useRef<HTMLAnchorElement>(null);
-  const [dfUpdateerror, setdfUpdateerror] = useState<string | null>(null);
   const { rowsPerPage, columnsWidth } = settings;
   // Memoize column names
   const columns = useMemo(() => dataFrame?.columns || [], [dataFrame]);
@@ -90,84 +84,6 @@ const DataTable: FunctionComponent = (): ReactElement => {
       console.error("Error exporting data:", error);
     }
   }, [dataFrame, columns]);
-
-  const handleOpenRenameDialog = useCallback(() => {
-    if (!dataFrame || dataFrame.isEmpty || dataFrame.shape[0] === 0) {
-      console.error("No data available to rename columns");
-      return;
-    }
-    // Infer data types if not already set
-    const inferred = inferDataTypes(dataFrame);
-    setColumnDataTypes(inferred);
-    setIsRenameDialogOpen(true);
-  }, [dataFrame, setColumnDataTypes]);
-  
-  const handleSaveRenamedColumns = (renamedColumns: Record<string, string>, newDataTypes: Record<string, ColumnDtype>) => {
-    if (!dataFrame) return;
-    let updatedDF = dataFrame;
-    let isDataFrameUpdated = false;
-    
-    console.log('Renamed Columns:', renamedColumns);
-    console.log('New Data Types:', newDataTypes);
-    try {      
-      // Apply column renaming
-      if (Object.keys(renamedColumns).length > 0) {
-        const hasActualChanges = Object.entries(renamedColumns).some(
-          ([oldName, newName]) => oldName !== newName
-        );
-        if (hasActualChanges) {
-          updatedDF = updatedDF.rename(renamedColumns);
-          console.log("Columns renamed successfully");
-          isDataFrameUpdated = true;
-        } 
-      }
-      
-      // Save the updated data types
-      setColumnDataTypes(newDataTypes);
-      
-      // Apply type conversions (this would depend on your DataFrame library's capabilities)
-      // This is a simplified example - you may need to adjust based on your actual implementation
-      Object.entries(newDataTypes).forEach(([column, type]) => {
-        if (!dataFrame.columns.includes(column)) {
-          console.log(`Column ${column} not found in DataFrame, skipping type conversion`);
-          return; // Using 'return' in forEach acts like 'continue' in a loop
-        }
-        if (!['float32', 'int32', 'boolean', 'string'].includes(type)) {
-          console.log(`Type ${type} not supported for column ${column}, skipping`);
-          return;
-        }
-        const targetColumn = renamedColumns[column] || column;
-        let currentType: string;
-        try {
-          currentType = updatedDF[targetColumn].dtype;
-        } catch (e) {
-          console.warn(`Error getting dtype for column ${targetColumn}:`, e);
-          currentType = '';
-        }
-        if (currentType === type) {
-          return;
-        }
-        try {
-          console.log(`Converting column ${targetColumn} from ${currentType} to ${type}`);
-          console.log(` column ${column} -Target column: ${targetColumn} with type ${type}`);
-          console.log(` Updatd DF columns ${updatedDF.columns}`);
-          updatedDF = updatedDF.asType(targetColumn, type);
-          isDataFrameUpdated = true;
-        } catch (error) {
-          setdfUpdateerror(`Failed to convert column ${targetColumn} to ${type}: ${error}`);
-          console.warn(`Failed to convert column ${targetColumn} to ${type}:`, error);
-        }
-      });
-      
-      if (isDataFrameUpdated) {
-        setDataFrame(updatedDF);
-        console.log("DataFrame updated successfully");
-      }
-      
-    } catch (error) {
-      console.error("Error applying column changes:", error);
-    }
-  };
   
   // Calculate column widths
   const columnWidths = useMemo(() => {
@@ -183,9 +99,7 @@ const DataTable: FunctionComponent = (): ReactElement => {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-['Montserrat'] ">Data Table</h2>
         <div className="flex gap-2">
-          <Button variant="primary" size="small" onClick={handleOpenRenameDialog}>
-            <AiOutlineEdit  /> Rename Columns & Change Data Types
-          </Button>
+          
           <Button variant="primary" size="small" onClick={handleExport}>
             <FiDownload /> Export
           </Button>
@@ -286,14 +200,7 @@ const DataTable: FunctionComponent = (): ReactElement => {
           </div>
         </div>
       )}
-      <RenameColumnsDialog 
-        isOpen={isRenameDialogOpen}
-        onClose={() => {setIsRenameDialogOpen(false) ; setdfUpdateerror(null)}}
-        columns={columns}
-        onSave={handleSaveRenamedColumns}
-        dataTypes={columnDataTypes}
-        error={dfUpdateerror}
-      />
+      
     </div>
   );
 };
