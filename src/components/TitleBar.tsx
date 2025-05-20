@@ -5,13 +5,17 @@ import {
   FiX, 
   FiSun, 
   FiMoon, 
-  FiGrid, 
   FiUser
 } from 'react-icons/fi';
+import { VscGraphLine } from "react-icons/vsc";
 
 import { Button } from './Button';
 
-const TitleBar: FunctionComponent = (): ReactElement => {
+interface TitleBarProps {
+    title: string;
+}
+
+const TitleBar: FunctionComponent<TitleBarProps> = ({title}): ReactElement => {
     const [isMenuClosed, setMenu] = useState<boolean>(true);
     const { toggleTheme, isDark } = useTheme();
     const [isScrollingUp, setIsScrollingUp] = useState<boolean>(true);
@@ -45,8 +49,9 @@ const TitleBar: FunctionComponent = (): ReactElement => {
                 <nav className="flex items-center justify-between py-2">
                     {/* Logo */}
                     <div className="flex items-center gap-2 text-md font-medium text-zinc-800 dark:text-zinc-100 font-['Montserrat']">
-                        <FiGrid className="text-lg text-zinc-600 dark:text-zinc-300" /> 
-                        <span>DataView</span>
+                        <VscGraphLine className="text-lg text-zinc-600 dark:text-zinc-300" /> 
+                        
+                        <span>{title}</span>
                     </div>
                     
                     {/* Desktop Navigation Links */}
