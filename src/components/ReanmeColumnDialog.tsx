@@ -1,7 +1,6 @@
 import { FunctionComponent, ReactElement, useState, useEffect } from 'react';
 import { FiX, FiSave} from 'react-icons/fi';
 import { Button } from './Button';
-import { ColumnDtype } from '../utility/Dfutility';
 
 interface ColumnInfo {
   originalName: string;
@@ -13,7 +12,6 @@ interface RenameColumnsDialogProps {
   onClose: () => void;
   columns: string[];
   onSave: (renamedColumns: Record<string, string>) => void;
-  dataTypes?: Record<string, ColumnDtype>;
   error: string | null;
 }
 
@@ -23,7 +21,6 @@ const RenameColumnsDialog: FunctionComponent<RenameColumnsDialogProps> = ({
   onClose,
   columns,
   onSave,
-  dataTypes = {},
   error = null
 }): ReactElement | null => {
   const [columnInfo, setColumnInfo] = useState<ColumnInfo[]>([]);
@@ -38,7 +35,7 @@ const RenameColumnsDialog: FunctionComponent<RenameColumnsDialogProps> = ({
         }))
       );
     }
-  }, [isOpen, columns, dataTypes]);
+  }, [isOpen, columns]);
 
   if (!isOpen) return null;
 
